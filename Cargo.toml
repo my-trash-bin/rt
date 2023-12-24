@@ -1,0 +1,6 @@
+[workspace]
+members = [
+  "bmp",
+  "pack",
+  "pack_cli",
+]
