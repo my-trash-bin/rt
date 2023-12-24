@@ -16,17 +16,11 @@ pub struct MinirtBmp {
 }
 
 impl MinirtBmp {
-    pub fn new(
-        width: usize,
-        height: usize,
-        fill: fn(usize, usize, &mut MinirtBmpPixel),
-    ) -> MinirtBmp {
+    pub fn new(width: usize, height: usize, fill: fn(usize, usize) -> MinirtBmpPixel) -> MinirtBmp {
         let mut extra = Vec::with_capacity(width * height);
         for y in 0..height {
             for x in 0..width {
-                let mut pixel = MinirtBmpPixel { r: 0, g: 0, b: 0 };
-                fill(x, y, &mut pixel);
-                extra.push(pixel);
+                extra.push(fill(x, y));
             }
         }
         MinirtBmp {
@@ -55,10 +49,8 @@ impl MinirtBmp {
         result.extend(&[0, 0, 0, 0]);
         result.extend(&(whole_size as u32).to_le_bytes());
         result.extend(&[0, 0, 0, 0]);
-        result.extend(&[0, 0, 1, 0]);
         result.extend(&[0, 0, 0, 0]);
-        result.extend(&[0, 0, 0, 0]);
-        result.extend(&[0, 1, 0, 0]);
+        result.extend(&24u32.to_le_bytes());
         result.extend(&[0, 0, 0, 0]);
 
         // Fill body
@@ -86,7 +78,7 @@ impl MinirtBmp {
         let height = i32::abs(i32::from_le_bytes(buffer[22..26].try_into()?)) as usize;
         let row_padding = (4 - (width * 3) % 4) % 4;
         let row_size = width * 3 + row_padding;
-        let whole_size = row_size * height;
+        let whole_size = row_size * height - row_padding;
 
         if buffer.len() < 54 + whole_size {
             return Err("Invalid BMP file size".into());
@@ -102,6 +94,10 @@ impl MinirtBmp {
             }
         }
 
-        Ok(MinirtBmp { width, height, extra })
-        }
+        Ok(MinirtBmp {
+            width,
+            height,
+            extra,
+        })
+    }
 }

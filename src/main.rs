@@ -10,10 +10,10 @@ use bmp::MinirtBmp;
 fn main() -> Result<(), Box<dyn Error>> {
     // Example usage
 
-    let bmp = MinirtBmp::new(1024, 1024, |x, y, pixel| {
-        pixel.r = (x / 4) as u8;
-        pixel.g = (y / 4) as u8;
-        pixel.b = 255;
+    let bmp = MinirtBmp::new(1024, 1024, |x, y| bmp::MinirtBmpPixel {
+        r: (x / 4) as u8,
+        g: (y / 4) as u8,
+        b: 255,
     });
     let serialized = bmp.serialize()?;
     write_bmp_file("example.bmp", &serialized)?;
