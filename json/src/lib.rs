@@ -30,7 +30,6 @@ enum TokenizerStateValue {
     None,
     KeywordOrNumber(String),
     StringU(String, String),
-    Number(String),
     String(String),
 }
 
