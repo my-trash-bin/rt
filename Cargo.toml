@@ -3,4 +3,6 @@ members = [
   "bmp",
   "pack",
   "pack_cli",
+  "json",
+  "rt",
 ]
