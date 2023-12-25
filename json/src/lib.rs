@@ -95,10 +95,7 @@ fn tokenizer_state_keyword_or_number(
                         "true" => Token::True,
                         _ => panic!(),
                     });
-                    TokenizerState {
-                        next: TokenizerStateFunction::Func(tokenizer_state_default),
-                        value: TokenizerStateValue::None,
-                    }
+                    tokenizer_state_default(TokenizerStateValue::None, input, result)
                 }
                 _ => {
                     if let Ok(value) = str.parse::<f64>() {
@@ -301,7 +298,7 @@ mod tests {
 
     #[test]
     fn test_tokenize() {
-        let input = "{ \"test\": true }";
+        let input = "{ \"t\\u0065st\": [true, 42e-1] }";
         let tokens = tokenize(input).unwrap();
 
         assert_eq!(
@@ -310,7 +307,11 @@ mod tests {
                 Token::BraceOpen,
                 Token::String("test".to_string()),
                 Token::Colon,
+                Token::BracketOpen,
                 Token::True,
+                Token::Comma,
+                Token::Number(4.2f64),
+                Token::BracketClose,
                 Token::BraceClose
             ]
         );
