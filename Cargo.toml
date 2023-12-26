@@ -4,5 +4,6 @@ members = [
   "pack",
   "pack_cli",
   "json",
+  "json_minifier_cli",
   "rt",
 ]

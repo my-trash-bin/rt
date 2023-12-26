@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 #[derive(Debug, PartialEq)]
 pub enum JsonValue {
-    Error,
     Null,
     Boolean(bool),
     Number(f64),
@@ -520,18 +519,68 @@ fn parse_list(
     }
 }
 
-pub fn parse_json(input: &str) -> Result<JsonValue, String> {
-    match tokenize(input) {
-        Ok(tokens) => {
-            let mut iter = tokens.into_iter();
-            let result = parse_value(&mut iter, "root".to_string());
-            if matches!(iter.next(), None) {
-                result
-            } else {
-                Err("Extra token found".to_string())
+fn string_to_literal(input: &str) -> String {
+    let mut result = String::from("\"");
+
+    for ch in input.chars() {
+        match ch {
+            '"' => result.push_str("\\\""),
+            '\\' => result.push_str("\\\\"),
+            '\n' => result.push_str("\\n"),
+            '\r' => result.push_str("\\r"),
+            '\t' => result.push_str("\\t"),
+            '\x08' => result.push_str("\\b"),
+            '\x0C' => result.push_str("\\f"),
+            _ if !ch.is_ascii() => {
+                let utf16_code = ch as u32;
+                result.push_str(&format!("\\u{:04X}", utf16_code));
             }
+            _ => result.push(ch),
         }
-        Err(reason) => Err(reason),
+    }
+
+    result.push('"');
+    result
+}
+
+impl JsonValue {
+    pub fn new(source: &str) -> Result<JsonValue, String> {
+        match tokenize(source) {
+            Ok(tokens) => {
+                let mut iter = tokens.into_iter();
+                let result = parse_value(&mut iter, "root".to_string());
+                if matches!(iter.next(), None) {
+                    result
+                } else {
+                    Err("Extra token found".to_string())
+                }
+            }
+            Err(reason) => Err(reason),
+        }
+    }
+
+    pub fn serialize(&self) -> String {
+        match self {
+            JsonValue::Null => "null".to_string(),
+            JsonValue::Boolean(true) => "true".to_string(),
+            JsonValue::Boolean(false) => "false".to_string(),
+            JsonValue::Number(number) => number.to_string(),
+            JsonValue::String(string) => string_to_literal(string.as_str()),
+            JsonValue::Dict(map) => format!(
+                "{{{}}}",
+                map.iter()
+                    .map(|(key, value)| format!("{}:{}", string_to_literal(key), value.serialize()))
+                    .collect::<Vec<String>>()
+                    .join(",")
+            ),
+            JsonValue::List(vec) => format!(
+                "[{}]",
+                vec.iter()
+                    .map(|x| x.serialize())
+                    .collect::<Vec<String>>()
+                    .join(",")
+            ),
+        }
     }
 }
 
@@ -563,7 +612,7 @@ mod tests {
     #[test]
     fn test_parse() {
         let input = "{ \"t\\u0065st\": [true, 42e-1] }";
-        let result = parse_json(input).unwrap();
+        let result = JsonValue::new(input).unwrap();
 
         assert_eq!(
             result,
@@ -576,5 +625,20 @@ mod tests {
                 .collect()
             )
         );
+    }
+
+    #[test]
+    fn test_serialize() {
+        let input = JsonValue::Dict(
+            vec![(
+                "t\u{0065}st".to_string(),
+                JsonValue::List(vec![JsonValue::Boolean(true), JsonValue::Number(4.2)]),
+            )]
+            .into_iter()
+            .collect(),
+        );
+        let result = JsonValue::new(JsonValue::serialize(&input).as_str()).unwrap();
+
+        assert_eq!(result, input);
     }
 }
