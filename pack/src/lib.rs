@@ -61,3 +61,19 @@ pub fn unpack(input: Vec<u8>) -> Option<HashMap<String, Vec<u8>>> {
 
     Some(unpacked_data)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_pack() {
+        let mut input = HashMap::new();
+        input.insert("input1".to_string(), (0..42).map(|i| i).collect());
+        input.insert("input2".to_string(), (0..42).map(|i| i + 2).collect());
+        input.insert("input3".to_string(), (0..42).map(|i| i * 2).collect());
+        let output = unpack(pack(input.clone())).unwrap();
+
+        assert_eq!(input, output);
+    }
+}
