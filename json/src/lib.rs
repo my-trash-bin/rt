@@ -531,7 +531,7 @@ fn string_to_literal(input: &str) -> String {
             '\t' => result.push_str("\\t"),
             '\x08' => result.push_str("\\b"),
             '\x0C' => result.push_str("\\f"),
-            _ if !ch.is_ascii() => {
+            _ if !ch.is_ascii_graphic() => {
                 let utf16_code = ch as u32;
                 result.push_str(&format!("\\u{:04X}", utf16_code));
             }
