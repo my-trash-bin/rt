@@ -1,0 +1,243 @@
+{
+  "$id": "rt/csg-model",
+  "title": "RT CSG model",
+  "description": "CSG model for RT",
+  "$ref": "#/$defs/root",
+  "$defs": {
+    "root": { "$ref": "#/$defs/map" },
+    "texture": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": { "type": "string", "union": ["texture"] },
+        "path": {
+          "type": "string",
+          "description": "path to texture .bmp file"
+        },
+        "size": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "description": "size of texture [width, height], default is [1, 1]",
+            "exclusiveMinimum": 0
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "offset": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "description": "offset of texture [x, y], default is [0, 0]",
+            "exclusiveMinimum": 0
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "shear": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "description": "shear of texture [x, y], default is [0, 0]",
+            "exclusiveMinimum": 0
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "nearest": {
+          "type": "boolean",
+          "description": "filter mode - true: nearest, false: linear. default is false"
+        },
+        "mirror": {
+          "type": "boolean",
+          "description": "address mode - true: mirror, false: wrap. default is false"
+        }
+      },
+      "required": ["type", "path"]
+    },
+    "blend-add": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "texture, or type of blend operation",
+          "enum": ["add"]
+        },
+        "children": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/map", "minItems": 2 }
+        }
+      },
+      "required": ["type", "children"]
+    },
+    "blend-multiply": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "texture, or type of blend operation",
+          "enum": ["multiply"]
+        },
+        "children": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/map", "minItems": 2 }
+        }
+      },
+      "required": ["type", "children"]
+    },
+    "blend-maximum": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "texture, or type of blend operation",
+          "enum": ["maximum"]
+        },
+        "children": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/map", "minItems": 2 }
+        }
+      },
+      "required": ["type", "children"]
+    },
+    "blend-minimum": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "texture, or type of blend operation",
+          "enum": ["minimum"]
+        },
+        "children": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/map", "minItems": 2 }
+        }
+      },
+      "required": ["type", "children"]
+    },
+    "blend-subtract": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "texture, or type of blend operation",
+          "enum": ["subtract"]
+        },
+        "from": { "$ref": "#/$defs/map" },
+        "subtract": { "$ref": "#/$defs/map" }
+      },
+      "required": ["type", "children"]
+    },
+    "blend-translate": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "texture, or type of blend operation",
+          "enum": ["translate"]
+        },
+        "original": { "$ref": "#/$defs/map" },
+        "translate": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "description": "translate distance [x, y]"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      },
+      "required": ["type", "original", "translate"]
+    },
+    "blend-scale": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "texture, or type of blend operation",
+          "enum": ["scale"]
+        },
+        "original": { "$ref": "#/$defs/map" },
+        "scale": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "description": "scale [x, y]"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      },
+      "required": ["type", "original", "scale"]
+    },
+    "blend-filter": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "texture, or type of blend operation",
+          "enum": ["filter"]
+        },
+        "original": { "$ref": "#/$defs/map" },
+        "filter": {
+          "description": "4x3 matrix to transform 1x4 matrix [r, g, b, 1] into [r, g, b]",
+          "oneOf": [
+            {
+              "type": "array",
+              "items": { "type": "number" },
+              "minItems": 12,
+              "maxItems": 12
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": { "type": "number" },
+                "minItems": 3,
+                "maxItems": 3
+              },
+              "minItems": 4,
+              "maxItems": 4
+            }
+          ]
+        }
+      },
+      "required": ["type", "original", "filter"]
+    },
+    "blend": {
+      "oneOf": [
+        { "$ref": "#/$defs/blend-add" },
+        { "$ref": "#/$defs/blend-multiply" },
+        { "$ref": "#/$defs/blend-maximum" },
+        { "$ref": "#/$defs/blend-minimum" },
+        { "$ref": "#/$defs/blend-subtract" },
+        { "$ref": "#/$defs/blend-translate" },
+        { "$ref": "#/$defs/blend-scale" },
+        { "$ref": "#/$defs/blend-filter" }
+      ]
+    },
+    "color-map": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "color": { "$ref": "base-types.schema.json#/$defs/ldr-color" }
+      },
+      "required": ["color"]
+    },
+    "map": {
+      "oneOf": [
+        { "$ref": "#/$defs/texture" },
+        { "$ref": "#/$defs/blend" },
+        { "$ref": "#/$defs/color-map" }
+      ]
+    }
+  }
+}

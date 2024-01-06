@@ -1,4 +1,17 @@
 {
+  "files.associations": {
+    "*.rt": "json",
+  },
+  "json.schemas": [
+    {
+      "fileMatch": ["*.schema.json"],
+      "url": "https://json-schema.org/draft/2020-12/schema",
+    },
+    {
+      "fileMatch": ["*.map.rt"],
+      "url": "./schema/map.schema.json",
+    },
+  ],
   "[rust]": {
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "rust-lang.rust-analyzer",

@@ -1,0 +1,235 @@
+{
+  "$id": "rt/base-types",
+  "title": "RT base types",
+  "description": "base types for RT",
+  "$defs": {
+    "angle": {
+      "oneOf": [
+        {
+          "type": "object",
+          "unevaluatedProperties": false,
+          "properties": {
+            "rotation": { "type": "number", "description": "angle in rotation" }
+          },
+          "required": ["rotation"]
+        },
+        {
+          "type": "object",
+          "unevaluatedProperties": false,
+          "properties": {
+            "radian": { "type": "number", "description": "angle in radian" }
+          },
+          "required": ["radian"]
+        },
+        {
+          "type": "object",
+          "unevaluatedProperties": false,
+          "properties": {
+            "degree": { "type": "number", "description": "angle in degree" }
+          },
+          "required": ["degree"]
+        }
+      ]
+    },
+    "angle-fov-plane": {
+      "oneOf": [
+        {
+          "type": "object",
+          "unevaluatedProperties": false,
+          "properties": {
+            "rotation": {
+              "type": "number",
+              "description": "angle in rotation",
+              "minimum": -0.5,
+              "maximum": 1
+            }
+          },
+          "required": ["rotation"]
+        },
+        {
+          "type": "object",
+          "unevaluatedProperties": false,
+          "properties": {
+            "radian": {
+              "type": "number",
+              "description": "angle in radian",
+              "minimum": -1.5707963267948966,
+              "maximum": 3.141592653589793
+            }
+          },
+          "required": ["radian"]
+        },
+        {
+          "type": "object",
+          "unevaluatedProperties": false,
+          "properties": {
+            "degree": {
+              "type": "number",
+              "description": "angle in degree",
+              "minimum": -90,
+              "maximum": 180
+            }
+          },
+          "required": ["degree"]
+        }
+      ]
+    },
+    "position": {
+      "type": "array",
+      "items": {
+        "type": "number",
+        "description": "coordinates of the position [x, y, z]"
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "direction": {
+      "type": "array",
+      "items": {
+        "type": "number",
+        "description": "direction normal for [x, y, z]",
+        "minimum": -1,
+        "maximum": 1
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "rotation": {
+      "type": "array",
+      "items": {
+        "type": "number",
+        "description": "rotation angle for [yaw, pitch, roll]"
+      },
+      "prefixItems": [
+        { "description": "rotation angle for yaw", "$ref": "#/$defs/angle" },
+        { "description": "rotation angle for pitch", "$ref": "#/$defs/angle" },
+        { "description": "rotation angle for roll", "$ref": "#/$defs/angle" }
+      ],
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "transform": {
+      "oneOf": [
+        { "$ref": "#/$defs/transform-1" },
+        { "$ref": "#/$defs/transform-n" }
+      ]
+    },
+    "transform-n": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/transform-1" }
+    },
+    "transform-1": {
+      "oneOf": [
+        { "$ref": "#/$defs/transform-translate" },
+        { "$ref": "#/$defs/transform-scale" },
+        { "$ref": "#/$defs/transform-rotate" },
+        { "$ref": "#/$defs/transform-n" }
+      ]
+    },
+    "transform-translate": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "oneOf": [
+        {
+          "properties": {
+            "translate": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "description": "translate distance [x, y, z]"
+              },
+              "minItems": 3,
+              "maxItems": 3
+            }
+          },
+          "required": ["translate"]
+        },
+        {
+          "properties": {
+            "translateX": { "type": "number" },
+            "translateY": { "type": "number" },
+            "translateZ": { "type": "number" }
+          },
+          "anyOf": [
+            { "required": ["translateX"] },
+            { "required": ["translateY"] },
+            { "required": ["translateZ"] }
+          ]
+        }
+      ]
+    },
+    "transform-scale": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "oneOf": [
+        {
+          "properties": {
+            "scale": {
+              "type": "array",
+              "items": { "type": "number", "description": "scale [x, y, z]" },
+              "minItems": 3,
+              "maxItems": 3
+            }
+          },
+          "required": ["scale"]
+        },
+        {
+          "properties": {
+            "scaleX": { "type": "number" },
+            "scaleY": { "type": "number" },
+            "scaleZ": { "type": "number" }
+          },
+          "anyOf": [
+            { "required": ["scaleX"] },
+            { "required": ["scaleY"] },
+            { "required": ["scaleZ"] }
+          ]
+        }
+      ]
+    },
+    "transform-rotate": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": { "origin": { "$ref": "#/$defs/position" } },
+      "oneOf": [
+        {
+          "properties": { "rotate": { "$ref": "#/$defs/rotation" } },
+          "required": ["rotate"]
+        },
+        {
+          "properties": { "rotateX": { "$ref": "#/$defs/angle" } },
+          "anyOf": [{ "required": ["rotateX"] }]
+        },
+        {
+          "properties": { "rotateY": { "$ref": "#/$defs/angle" } },
+          "anyOf": [{ "required": ["rotateY"] }]
+        },
+        {
+          "properties": { "rotateZ": { "$ref": "#/$defs/angle" } },
+          "anyOf": [{ "required": ["rotateZ"] }]
+        }
+      ]
+    },
+    "ldr-color": {
+      "type": "array",
+      "items": {
+        "type": "number",
+        "description": "color value [red, green, blue] in low dynamic range",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "hdr-color": {
+      "type": "array",
+      "items": {
+        "type": "number",
+        "description": "color value [red, green, blue] in high dynamic range",
+        "minimum": 0
+      },
+      "minItems": 3,
+      "maxItems": 3
+    }
+  }
+}
