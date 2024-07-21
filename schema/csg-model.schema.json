@@ -1,0 +1,991 @@
+{
+  "$id": "rt/csg-model",
+  "title": "RT CSG model",
+  "description": "CSG model for RT",
+  "$ref": "#/$defs/root",
+  "$defs": {
+    "root": {
+      "oneOf": [
+        { "$ref": "#/$defs/compound" },
+        { "$ref": "#/$defs/primitive" }
+      ]
+    },
+    "compound": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "type of CSG operation",
+          "enum": ["union", "intersection", "difference"]
+        },
+        "a": { "$ref": "#/$defs/root" },
+        "b": { "$ref": "#/$defs/root" }
+      },
+      "required": ["type", "a", "b"],
+      "allOf": [{ "$ref": "#/$defs/has-optional-transform" }]
+    },
+    "primitive": {
+      "oneOf": [
+        { "$ref": "#/$defs/compound" },
+        { "$ref": "#/$defs/primitive" }
+      ]
+    },
+    "angle": {
+      "oneOf": [
+        {
+          "type": "object",
+          "unevaluatedProperties": false,
+          "properties": {
+            "rotation": { "type": "number", "description": "angle in rotation" }
+          },
+          "required": ["rotation"]
+        },
+        {
+          "type": "object",
+          "unevaluatedProperties": false,
+          "properties": {
+            "radian": { "type": "number", "description": "angle in radian" }
+          },
+          "required": ["radian"]
+        },
+        {
+          "type": "object",
+          "unevaluatedProperties": false,
+          "properties": {
+            "degree": { "type": "number", "description": "angle in degree" }
+          },
+          "required": ["degree"]
+        }
+      ]
+    },
+    "angle-fov-plane": {
+      "oneOf": [
+        {
+          "type": "object",
+          "unevaluatedProperties": false,
+          "properties": {
+            "rotation": {
+              "type": "number",
+              "description": "angle in rotation",
+              "minimum": -0.5,
+              "maximum": 1
+            }
+          },
+          "required": ["rotation"]
+        },
+        {
+          "type": "object",
+          "unevaluatedProperties": false,
+          "properties": {
+            "radian": {
+              "type": "number",
+              "description": "angle in radian",
+              "minimum": -1.5707963267948966,
+              "maximum": 3.141592653589793
+            }
+          },
+          "required": ["radian"]
+        },
+        {
+          "type": "object",
+          "unevaluatedProperties": false,
+          "properties": {
+            "degree": {
+              "type": "number",
+              "description": "angle in degree",
+              "minimum": -90,
+              "maximum": 180
+            }
+          },
+          "required": ["degree"]
+        }
+      ]
+    },
+    "position": {
+      "type": "array",
+      "items": {
+        "type": "number",
+        "description": "coordinates of the position [x, y, z]"
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "direction": {
+      "type": "array",
+      "items": {
+        "type": "number",
+        "description": "direction normal for [x, y, z]",
+        "minimum": -1,
+        "maximum": 1
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "rotation": {
+      "type": "array",
+      "items": {
+        "type": "number",
+        "description": "rotation angle for [yaw, pitch, roll]"
+      },
+      "prefixItems": [
+        { "description": "rotation angle for yaw", "$ref": "#/$defs/angle" },
+        { "description": "rotation angle for pitch", "$ref": "#/$defs/angle" },
+        { "description": "rotation angle for roll", "$ref": "#/$defs/angle" }
+      ],
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "transform": {
+      "oneOf": [
+        { "$ref": "#/$defs/transform-1" },
+        { "$ref": "#/$defs/transform-n" }
+      ]
+    },
+    "transform-n": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/transform-1" }
+    },
+    "transform-1": {
+      "oneOf": [
+        { "$ref": "#/$defs/transform-translate" },
+        { "$ref": "#/$defs/transform-scale" },
+        { "$ref": "#/$defs/transform-rotate" }
+      ]
+    },
+    "transform-translate": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "oneOf": [
+        {
+          "properties": {
+            "translate": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "description": "translate distance [x, y, z]"
+              },
+              "minItems": 3,
+              "maxItems": 3
+            }
+          },
+          "required": ["translate"]
+        },
+        {
+          "properties": {
+            "translateX": { "type": "number" },
+            "translateY": { "type": "number" },
+            "translateZ": { "type": "number" }
+          },
+          "anyOf": [
+            { "required": ["translateX"] },
+            { "required": ["translateY"] },
+            { "required": ["translateZ"] }
+          ]
+        }
+      ]
+    },
+    "transform-scale": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "oneOf": [
+        {
+          "properties": {
+            "scale": {
+              "type": "array",
+              "items": { "type": "number", "description": "scale [x, y, z]" },
+              "minItems": 3,
+              "maxItems": 3
+            }
+          },
+          "required": ["scale"]
+        },
+        {
+          "properties": {
+            "scaleX": { "type": "number" },
+            "scaleY": { "type": "number" },
+            "scaleZ": { "type": "number" }
+          },
+          "anyOf": [
+            { "required": ["scaleX"] },
+            { "required": ["scaleY"] },
+            { "required": ["scaleZ"] }
+          ]
+        }
+      ]
+    },
+    "transform-rotate": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": { "origin": { "$ref": "#/$defs/position" } },
+      "oneOf": [
+        {
+          "properties": { "rotate": { "$ref": "#/$defs/rotation" } },
+          "required": ["rotate"]
+        },
+        {
+          "properties": { "rotateX": { "$ref": "#/$defs/angle" } },
+          "anyOf": [{ "required": ["rotateX"] }]
+        },
+        {
+          "properties": { "rotateY": { "$ref": "#/$defs/angle" } },
+          "anyOf": [{ "required": ["rotateY"] }]
+        },
+        {
+          "properties": { "rotateZ": { "$ref": "#/$defs/angle" } },
+          "anyOf": [{ "required": ["rotateZ"] }]
+        }
+      ]
+    },
+    "has-optional-position": {
+      "properties": { "position": { "$ref": "#/$defs/position" } }
+    },
+    "has-optional-rotation": {
+      "properties": { "rotation": { "$ref": "#/$defs/rotation" } }
+    },
+    "has-optional-transform": {
+      "properties": { "transform": { "$ref": "#/$defs/transform" } }
+    },
+    "ldr-color": {
+      "type": "array",
+      "items": {
+        "type": "number",
+        "description": "color value [red, green, blue] in low dynamic range",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "hdr-color": {
+      "type": "array",
+      "items": {
+        "type": "number",
+        "description": "color value [red, green, blue] in high dynamic range",
+        "minimum": 0
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "texture": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": { "type": "string", "union": ["texture"] },
+        "path": {
+          "type": "string",
+          "description": "path to texture .bmp file"
+        },
+        "size": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "description": "size of texture [width, height], default is [1, 1]",
+            "exclusiveMinimum": 0
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "offset": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "description": "offset of texture [x, y], default is [0, 0]",
+            "exclusiveMinimum": 0
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "shear": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "description": "shear of texture [x, y], default is [0, 0]",
+            "exclusiveMinimum": 0
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "nearest": {
+          "type": "boolean",
+          "description": "filter mode - true: nearest, false: linear. default is false"
+        },
+        "mirror": {
+          "type": "boolean",
+          "description": "address mode - true: mirror, false: wrap. default is false"
+        }
+      },
+      "required": ["type", "path"]
+    },
+    "blend-add": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "texture, or type of blend operation",
+          "enum": ["add"]
+        },
+        "children": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/map", "minItems": 2 }
+        }
+      },
+      "required": ["type", "children"]
+    },
+    "blend-multiply": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "texture, or type of blend operation",
+          "enum": ["multiply"]
+        },
+        "children": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/map", "minItems": 2 }
+        }
+      },
+      "required": ["type", "children"]
+    },
+    "blend-maximum": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "texture, or type of blend operation",
+          "enum": ["maximum"]
+        },
+        "children": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/map", "minItems": 2 }
+        }
+      },
+      "required": ["type", "children"]
+    },
+    "blend-minimum": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "texture, or type of blend operation",
+          "enum": ["minimum"]
+        },
+        "children": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/map", "minItems": 2 }
+        }
+      },
+      "required": ["type", "children"]
+    },
+    "blend-subtract": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "texture, or type of blend operation",
+          "enum": ["subtract"]
+        },
+        "from": { "$ref": "#/$defs/map" },
+        "subtract": { "$ref": "#/$defs/map" }
+      },
+      "required": ["type", "children"]
+    },
+    "blend-translate": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "texture, or type of blend operation",
+          "enum": ["translate"]
+        },
+        "original": { "$ref": "#/$defs/map" },
+        "translate": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "description": "translate distance [x, y]"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      },
+      "required": ["type", "original", "translate"]
+    },
+    "blend-scale": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "texture, or type of blend operation",
+          "enum": ["scale"]
+        },
+        "original": { "$ref": "#/$defs/map" },
+        "scale": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "description": "scale [x, y]"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      },
+      "required": ["type", "original", "scale"]
+    },
+    "blend-filter": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "texture, or type of blend operation",
+          "enum": ["filter"]
+        },
+        "original": { "$ref": "#/$defs/map" },
+        "filter": {
+          "description": "4x3 matrix to transform 1x4 matrix [r, g, b, 1] into [r, g, b]",
+          "oneOf": [
+            {
+              "type": "array",
+              "items": { "type": "number" },
+              "minItems": 12,
+              "maxItems": 12
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": { "type": "number" },
+                "minItems": 3,
+                "maxItems": 3
+              },
+              "minItems": 4,
+              "maxItems": 4
+            }
+          ]
+        }
+      },
+      "required": ["type", "original", "filter"]
+    },
+    "blend": {
+      "oneOf": [
+        { "$ref": "#/$defs/blend-add" },
+        { "$ref": "#/$defs/blend-multiply" },
+        { "$ref": "#/$defs/blend-maximum" },
+        { "$ref": "#/$defs/blend-minimum" },
+        { "$ref": "#/$defs/blend-subtract" },
+        { "$ref": "#/$defs/blend-translate" },
+        { "$ref": "#/$defs/blend-scale" },
+        { "$ref": "#/$defs/blend-filter" }
+      ]
+    },
+    "map": {
+      "oneOf": [
+        { "$ref": "#/$defs/texture" },
+        { "$ref": "#/$defs/blend" },
+        { "$ref": "#/$defs/ldr-color" }
+      ]
+    },
+    "material": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "ambient": { "$ref": "#/$defs/map" },
+        "diffuse": { "$ref": "#/$defs/map" },
+        "specular": { "$ref": "#/$defs/map" },
+        "specularLobe": { "type": "number" },
+        "normal": { "$ref": "#/$defs/map" }
+      }
+    },
+    "material-no-map": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "ambient": { "$ref": "#/$defs/ldr-color" },
+        "diffuse": { "$ref": "#/$defs/ldr-color" },
+        "specular": { "$ref": "#/$defs/ldr-color" },
+        "specularLobe": { "type": "number" }
+      }
+    },
+    "group": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "type of object",
+          "enum": ["group"]
+        },
+        "children": { "type": "array", "items": { "$ref": "#/$defs/object" } }
+      },
+      "required": ["type", "children"],
+      "allOf": [{ "$ref": "#/$defs/has-optional-transform" }]
+    },
+    "primitive-sphere": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "type of solid geometry",
+          "enum": ["sphere"]
+        },
+        "radius": {
+          "type": "number",
+          "description": "radius of sphere",
+          "exclusiveMinimum": 0
+        },
+        "material": { "$ref": "#/$defs/material" }
+      },
+      "required": ["type"],
+      "allOf": [
+        { "$ref": "#/$defs/has-optional-position" },
+        { "$ref": "#/$defs/has-optional-rotation" },
+        { "$ref": "#/$defs/has-optional-transform" }
+      ]
+    },
+    "primitive-cone": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "type of solid geometry",
+          "enum": ["cone"]
+        },
+        "radius": {
+          "type": "number",
+          "description": "radius of cone bottom",
+          "exclusiveMinimum": 0
+        },
+        "height": {
+          "type": "number",
+          "description": "cone height",
+          "exclusiveMinimum": 0
+        },
+        "material": {
+          "oneOf": [
+            { "$ref": "#/$defs/material" },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/material",
+                "description": "material for [side, bottom]"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        }
+      },
+      "required": ["type"],
+      "allOf": [
+        { "$ref": "#/$defs/has-optional-position" },
+        { "$ref": "#/$defs/has-optional-rotation" },
+        { "$ref": "#/$defs/has-optional-transform" }
+      ]
+    },
+    "primitive-cylinder": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "type of solid geometry",
+          "enum": ["cylinder"]
+        },
+        "radius": {
+          "type": "number",
+          "description": "radius of cylinder bottom",
+          "exclusiveMinimum": 0
+        },
+        "height": {
+          "type": "number",
+          "description": "cylinder height",
+          "exclusiveMinimum": 0
+        },
+        "material": {
+          "oneOf": [
+            { "$ref": "#/$defs/material" },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/material",
+                "description": "material for [side, top, bottom]"
+              },
+              "minItems": 3,
+              "maxItems": 3
+            }
+          ]
+        }
+      },
+      "required": ["type"],
+      "allOf": [
+        { "$ref": "#/$defs/has-optional-position" },
+        { "$ref": "#/$defs/has-optional-rotation" },
+        { "$ref": "#/$defs/has-optional-transform" }
+      ]
+    },
+    "primitive-cube": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "type of solid geometry",
+          "enum": ["cube"]
+        },
+        "size": {
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "description": "size [x, y, z]",
+                "exclusiveMinimum": 0
+              },
+              "minItems": 3,
+              "maxItems": 3
+            },
+            { "type": "number", "exclusiveMinimum": 0 }
+          ]
+        },
+        "material": {
+          "oneOf": [
+            { "$ref": "#/$defs/material" },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/material",
+                "description": "material for [top, bottom, left, right, front, back]"
+              },
+              "minItems": 3,
+              "maxItems": 3
+            }
+          ]
+        }
+      },
+      "required": ["type"],
+      "allOf": [
+        { "$ref": "#/$defs/has-optional-position" },
+        { "$ref": "#/$defs/has-optional-rotation" },
+        { "$ref": "#/$defs/has-optional-transform" }
+      ]
+    },
+    "primitive-torus": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "type of solid geometry",
+          "enum": ["torus"]
+        },
+        "majorRadius": {
+          "type": "number",
+          "description": "major radius of torus",
+          "exclusiveMinimum": 0
+        },
+        "minorRadius": {
+          "type": "number",
+          "description": "minor radius of torus",
+          "exclusiveMinimum": 0
+        },
+        "material": { "$ref": "#/$defs/material" }
+      },
+      "required": ["type"],
+      "allOf": [
+        { "$ref": "#/$defs/has-optional-position" },
+        { "$ref": "#/$defs/has-optional-rotation" },
+        { "$ref": "#/$defs/has-optional-transform" }
+      ]
+    },
+    "primitive-plane": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "coefficients": {
+          "x^4": { "type": "number" },
+          "y^4": { "type": "number" },
+          "z^4": { "type": "number" },
+          "x^3y": { "type": "number" },
+          "x^3z": { "type": "number" },
+          "xy^3": { "type": "number" },
+          "y^3z": { "type": "number" },
+          "xz^3": { "type": "number" },
+          "yz^3": { "type": "number" },
+          "x^2y^2": { "type": "number" },
+          "y^2z^2": { "type": "number" },
+          "x^2z^2": { "type": "number" },
+          "x^2yz": { "type": "number" },
+          "xy^2z": { "type": "number" },
+          "xyz^2": { "type": "number" },
+          "x^3": { "type": "number" },
+          "y^3": { "type": "number" },
+          "z^3": { "type": "number" },
+          "x^2y": { "type": "number" },
+          "x^2z": { "type": "number" },
+          "xy^2": { "type": "number" },
+          "y^2z": { "type": "number" },
+          "xz^2": { "type": "number" },
+          "yz^2": { "type": "number" },
+          "xyz": { "type": "number" },
+          "x^2": { "type": "number" },
+          "y^2": { "type": "number" },
+          "z^2": { "type": "number" },
+          "xy": { "type": "number" },
+          "yz": { "type": "number" },
+          "xz": { "type": "number" },
+          "x": { "type": "number" },
+          "y": { "type": "number" },
+          "z": { "type": "number" },
+          "1": { "type": "number" }
+        },
+        "isInside": { "type": "boolean" },
+        "material": { "$ref": "#/$defs/material-no-map" }
+      },
+      "required": ["coefficients"],
+      "allOf": [{ "$ref": "#/$defs/has-optional-transform" }]
+    },
+    "primitive-model": {
+      "oneOf": [
+        { "$ref": "#/$defs/primitive-sphere" },
+        { "$ref": "#/$defs/primitive-cone" },
+        { "$ref": "#/$defs/primitive-cylinder" },
+        { "$ref": "#/$defs/primitive-cube" },
+        { "$ref": "#/$defs/primitive-torus" },
+        { "$ref": "#/$defs/primitive-plane" }
+      ]
+    },
+    "csg-union": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "type of operation",
+          "enum": ["union"]
+        },
+        "children": {
+          "type": "array",
+          "description": "operand of operation",
+          "items": { "$ref": "#/$defs/csg-model" }
+        }
+      },
+      "required": ["type", "children"],
+      "allOf": [{ "$ref": "#/$defs/has-optional-transform" }]
+    },
+    "csg-intersection": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "type of operation",
+          "enum": ["intersection"]
+        },
+        "children": {
+          "type": "array",
+          "description": "operand of operation",
+          "items": { "$ref": "#/$defs/csg-model" },
+          "minItems": 2
+        }
+      },
+      "required": ["type", "children"],
+      "allOf": [{ "$ref": "#/$defs/has-optional-transform" }]
+    },
+    "csg-difference": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "type of operation",
+          "enum": ["difference"]
+        },
+        "from": { "$ref": "#/$defs/csg-model" },
+        "subtract": { "$ref": "#/$defs/csg-model" }
+      },
+      "required": ["type", "from", "subtract"],
+      "allOf": [{ "$ref": "#/$defs/has-optional-transform" }]
+    },
+    "constructive-model": {
+      "oneOf": [
+        { "$ref": "#/$defs/csg-union" },
+        { "$ref": "#/$defs/csg-intersection" },
+        { "$ref": "#/$defs/csg-difference" }
+      ]
+    },
+    "csg-model": {
+      "oneOf": [
+        {
+          "oneOf": [
+            { "$ref": "#/$defs/primitive-model" },
+            { "$ref": "#/$defs/constructive-model" }
+          ]
+        },
+        { "$ref": "#/$defs/ref" }
+      ]
+    },
+    "csg-object": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "type of object",
+          "enum": ["csg"]
+        },
+        "model": { "$ref": "#/$defs/csg-model" },
+        "transparent": {
+          "oneOf": [
+            {
+              "type": "boolean",
+              "description": "set to false to make non-transparent",
+              "enum": [false]
+            },
+            {
+              "type": "object",
+              "unevaluatedProperties": false,
+              "properties": {
+                "transparency": {
+                  "type": "number",
+                  "description": "transparency",
+                  "exclusiveMinimum": 0,
+                  "exclusiveMaximum": 1
+                },
+                "color": {
+                  "description": "transmission filter color",
+                  "$ref": "#/$defs/ldr-color"
+                },
+                "opticalDensity": {
+                  "type": "number",
+                  "description": "index of refraction",
+                  "exclusiveMinimum": 0
+                }
+              },
+              "required": ["transparency"]
+            }
+          ]
+        }
+      },
+      "required": ["type", "model"]
+    },
+    "obj-object": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "type of object",
+          "enum": ["obj"]
+        },
+        "path": { "type": "string", "description": "path to .obj file" }
+      },
+      "required": ["type", "path"]
+    },
+    "ref": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "ref": { "type": "string", "description": "reference, key of defs" }
+      },
+      "required": ["ref"]
+    },
+    "model": {
+      "oneOf": [
+        { "$ref": "#/$defs/csg-object" },
+        { "$ref": "#/$defs/obj-object" }
+      ]
+    },
+    "light-point": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "type of light",
+          "enum": ["point"]
+        },
+        "color": { "$ref": "#/$defs/hdr-color" },
+        "position": { "$ref": "#/$defs/position" },
+        "range": {
+          "type": "number",
+          "description": "default is infinity",
+          "exclusiveMinimum": 0
+        },
+        "attenuation": {
+          "type": "boolean",
+          "description": "whether use attenuation, default is true"
+        }
+      },
+      "required": ["type", "color", "position"]
+    },
+    "light-directional": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "type of light",
+          "enum": ["directional"]
+        },
+        "color": { "$ref": "#/$defs/hdr-color" },
+        "direction": { "$ref": "#/$defs/direction" }
+      },
+      "required": ["type", "color", "direction"]
+    },
+    "light-spot": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "type of light",
+          "enum": ["spot"]
+        },
+        "color": { "$ref": "#/$defs/hdr-color" },
+        "position": { "$ref": "#/$defs/position" },
+        "angle": {
+          "description": "angle for the spot light",
+          "$ref": "#/$defs/angle-spot"
+        },
+        "direction": { "$ref": "#/$defs/direction" },
+        "range": {
+          "type": "number",
+          "description": "default is infinity",
+          "exclusiveMinimum": 0
+        },
+        "attenuation": {
+          "type": "boolean",
+          "description": "whether use attenuation, default is true"
+        }
+      },
+      "required": ["type", "color", "position", "angle", "direction"]
+    },
+    "light": {
+      "oneOf": [
+        { "$ref": "#/$defs/light-point" },
+        { "$ref": "#/$defs/light-directional" },
+        { "$ref": "#/$defs/light-spot" }
+      ]
+    },
+    "object": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "oneOf": [
+        { "$ref": "#/$defs/group" },
+        { "$ref": "#/$defs/model" },
+        { "$ref": "#/$defs/light" },
+        { "$ref": "#/$defs/ref" }
+      ]
+    }
+  }
+}
