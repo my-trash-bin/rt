@@ -25,12 +25,6 @@
       "required": ["type", "a", "b"],
       "allOf": [{ "$ref": "#/$defs/has-optional-transform" }]
     },
-    "primitive": {
-      "oneOf": [
-        { "$ref": "#/$defs/compound" },
-        { "$ref": "#/$defs/primitive" }
-      ]
-    },
     "material": {
       "type": "object",
       "unevaluatedProperties": false,
@@ -60,20 +54,6 @@
     },
     "has-optional-transform": {
       "properties": { "transform": { "$ref": "base-types.schema.json#/$defs/transform" } }
-    },
-    "group": {
-      "type": "object",
-      "unevaluatedProperties": false,
-      "properties": {
-        "type": {
-          "type": "string",
-          "description": "type of object",
-          "enum": ["group"]
-        },
-        "children": { "type": "array", "items": { "$ref": "#/$defs/object" } }
-      },
-      "required": ["type", "children"],
-      "allOf": [{ "$ref": "#/$defs/has-optional-transform" }]
     },
     "primitive-sphere": {
       "type": "object",
@@ -301,7 +281,7 @@
       "required": ["coefficients"],
       "allOf": [{ "$ref": "#/$defs/has-optional-transform" }]
     },
-    "primitive-model": {
+    "primitive": {
       "oneOf": [
         { "$ref": "#/$defs/primitive-sphere" },
         { "$ref": "#/$defs/primitive-cone" },
@@ -309,229 +289,6 @@
         { "$ref": "#/$defs/primitive-cube" },
         { "$ref": "#/$defs/primitive-torus" },
         { "$ref": "#/$defs/primitive-plane" }
-      ]
-    },
-    "csg-union": {
-      "type": "object",
-      "unevaluatedProperties": false,
-      "properties": {
-        "type": {
-          "type": "string",
-          "description": "type of operation",
-          "enum": ["union"]
-        },
-        "children": {
-          "type": "array",
-          "description": "operand of operation",
-          "items": { "$ref": "#/$defs/csg-model" }
-        }
-      },
-      "required": ["type", "children"],
-      "allOf": [{ "$ref": "#/$defs/has-optional-transform" }]
-    },
-    "csg-intersection": {
-      "type": "object",
-      "unevaluatedProperties": false,
-      "properties": {
-        "type": {
-          "type": "string",
-          "description": "type of operation",
-          "enum": ["intersection"]
-        },
-        "children": {
-          "type": "array",
-          "description": "operand of operation",
-          "items": { "$ref": "#/$defs/csg-model" },
-          "minItems": 2
-        }
-      },
-      "required": ["type", "children"],
-      "allOf": [{ "$ref": "#/$defs/has-optional-transform" }]
-    },
-    "csg-difference": {
-      "type": "object",
-      "unevaluatedProperties": false,
-      "properties": {
-        "type": {
-          "type": "string",
-          "description": "type of operation",
-          "enum": ["difference"]
-        },
-        "from": { "$ref": "#/$defs/csg-model" },
-        "subtract": { "$ref": "#/$defs/csg-model" }
-      },
-      "required": ["type", "from", "subtract"],
-      "allOf": [{ "$ref": "#/$defs/has-optional-transform" }]
-    },
-    "constructive-model": {
-      "oneOf": [
-        { "$ref": "#/$defs/csg-union" },
-        { "$ref": "#/$defs/csg-intersection" },
-        { "$ref": "#/$defs/csg-difference" }
-      ]
-    },
-    "csg-model": {
-      "oneOf": [
-        {
-          "oneOf": [
-            { "$ref": "#/$defs/primitive-model" },
-            { "$ref": "#/$defs/constructive-model" }
-          ]
-        },
-        { "$ref": "#/$defs/ref" }
-      ]
-    },
-    "csg-object": {
-      "type": "object",
-      "unevaluatedProperties": false,
-      "properties": {
-        "type": {
-          "type": "string",
-          "description": "type of object",
-          "enum": ["csg"]
-        },
-        "model": { "$ref": "#/$defs/csg-model" },
-        "transparent": {
-          "oneOf": [
-            {
-              "type": "boolean",
-              "description": "set to false to make non-transparent",
-              "enum": [false]
-            },
-            {
-              "type": "object",
-              "unevaluatedProperties": false,
-              "properties": {
-                "transparency": {
-                  "type": "number",
-                  "description": "transparency",
-                  "exclusiveMinimum": 0,
-                  "exclusiveMaximum": 1
-                },
-                "color": {
-                  "description": "transmission filter color",
-                  "$ref": "base-types.schema.json#/$defs/ldr-color"
-                },
-                "opticalDensity": {
-                  "type": "number",
-                  "description": "index of refraction",
-                  "exclusiveMinimum": 0
-                }
-              },
-              "required": ["transparency"]
-            }
-          ]
-        }
-      },
-      "required": ["type", "model"]
-    },
-    "obj-object": {
-      "type": "object",
-      "unevaluatedProperties": false,
-      "properties": {
-        "type": {
-          "type": "string",
-          "description": "type of object",
-          "enum": ["obj"]
-        },
-        "path": { "type": "string", "description": "path to .obj file" }
-      },
-      "required": ["type", "path"]
-    },
-    "ref": {
-      "type": "object",
-      "unevaluatedProperties": false,
-      "properties": {
-        "ref": { "type": "string", "description": "reference, key of defs" }
-      },
-      "required": ["ref"]
-    },
-    "model": {
-      "oneOf": [
-        { "$ref": "#/$defs/csg-object" },
-        { "$ref": "#/$defs/obj-object" }
-      ]
-    },
-    "light-point": {
-      "type": "object",
-      "unevaluatedProperties": false,
-      "properties": {
-        "type": {
-          "type": "string",
-          "description": "type of light",
-          "enum": ["point"]
-        },
-        "color": { "$ref": "base-types.schema.json#/$defs/hdr-color" },
-        "position": { "$ref": "base-types.schema.json#/$defs/position" },
-        "range": {
-          "type": "number",
-          "description": "default is infinity",
-          "exclusiveMinimum": 0
-        },
-        "attenuation": {
-          "type": "boolean",
-          "description": "whether use attenuation, default is true"
-        }
-      },
-      "required": ["type", "color", "position"]
-    },
-    "light-directional": {
-      "type": "object",
-      "unevaluatedProperties": false,
-      "properties": {
-        "type": {
-          "type": "string",
-          "description": "type of light",
-          "enum": ["directional"]
-        },
-        "color": { "$ref": "base-types.schema.json#/$defs/hdr-color" },
-        "direction": { "$ref": "base-types.schema.json#/$defs/direction" }
-      },
-      "required": ["type", "color", "direction"]
-    },
-    "light-spot": {
-      "type": "object",
-      "unevaluatedProperties": false,
-      "properties": {
-        "type": {
-          "type": "string",
-          "description": "type of light",
-          "enum": ["spot"]
-        },
-        "color": { "$ref": "base-types.schema.json#/$defs/hdr-color" },
-        "position": { "$ref": "base-types.schema.json#/$defs/position" },
-        "angle": {
-          "description": "angle for the spot light",
-          "$ref": "base-types.schema.json#/$defs/angle-convex"
-        },
-        "direction": { "$ref": "base-types.schema.json#/$defs/direction" },
-        "range": {
-          "type": "number",
-          "description": "default is infinity",
-          "exclusiveMinimum": 0
-        },
-        "attenuation": {
-          "type": "boolean",
-          "description": "whether use attenuation, default is true"
-        }
-      },
-      "required": ["type", "color", "position", "angle", "direction"]
-    },
-    "light": {
-      "oneOf": [
-        { "$ref": "#/$defs/light-point" },
-        { "$ref": "#/$defs/light-directional" },
-        { "$ref": "#/$defs/light-spot" }
-      ]
-    },
-    "object": {
-      "type": "object",
-      "unevaluatedProperties": false,
-      "oneOf": [
-        { "$ref": "#/$defs/group" },
-        { "$ref": "#/$defs/model" },
-        { "$ref": "#/$defs/light" },
-        { "$ref": "#/$defs/ref" }
       ]
     }
   }

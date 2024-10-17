@@ -11,6 +11,18 @@
       "fileMatch": ["*.map.rt"],
       "url": "./schema/map.schema.json",
     },
+    {
+      "fileMatch": ["*.csg-model.rt"],
+      "url": "./schema/csg-model.schema.json",
+    },
+    {
+      "fileMatch": ["*.object.rt"],
+      "url": "./schema/object.schema.json",
+    },
+    {
+      "fileMatch": ["*.scene.rt"],
+      "url": "./schema/scene.schema.json",
+    },
   ],
   "[rust]": {
     "editor.formatOnSave": true,

@@ -1,0 +1,101 @@
+{
+  "$id": "rt/csg-model",
+  "title": "RT CSG model",
+  "description": "CSG model for RT",
+  "$ref": "#/$defs/root",
+  "$defs": {
+    "root": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "oneOf": [{ "$ref": "#/$defs/light" }, { "$ref": "#/$defs/csg" }]
+    },
+    "light-point": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "type of light",
+          "enum": ["point"]
+        },
+        "color": { "$ref": "base-types.schema.json#/$defs/hdr-color" },
+        "position": { "$ref": "base-types.schema.json#/$defs/position" },
+        "range": {
+          "type": "number",
+          "description": "default is infinity",
+          "exclusiveMinimum": 0
+        },
+        "attenuation": {
+          "type": "boolean",
+          "description": "whether use attenuation, default is true"
+        }
+      },
+      "required": ["type", "color", "position"]
+    },
+    "light-directional": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "type of light",
+          "enum": ["directional"]
+        },
+        "color": { "$ref": "base-types.schema.json#/$defs/hdr-color" },
+        "direction": { "$ref": "base-types.schema.json#/$defs/direction" }
+      },
+      "required": ["type", "color", "direction"]
+    },
+    "light-spot": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "type of light",
+          "enum": ["spot"]
+        },
+        "color": { "$ref": "base-types.schema.json#/$defs/hdr-color" },
+        "position": { "$ref": "base-types.schema.json#/$defs/position" },
+        "angle": {
+          "description": "angle for the spot light",
+          "$ref": "base-types.schema.json#/$defs/angle-convex"
+        },
+        "direction": { "$ref": "base-types.schema.json#/$defs/direction" },
+        "range": {
+          "type": "number",
+          "description": "default is infinity",
+          "exclusiveMinimum": 0
+        },
+        "attenuation": {
+          "type": "boolean",
+          "description": "whether use attenuation, default is true"
+        }
+      },
+      "required": ["type", "color", "position", "angle", "direction"]
+    },
+    "light": {
+      "oneOf": [
+        { "$ref": "#/$defs/light-point" },
+        { "$ref": "#/$defs/light-directional" },
+        { "$ref": "#/$defs/light-spot" }
+      ]
+    },
+    "csg": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "type of object",
+          "enum": ["csg"]
+        },
+        "model": { "$ref": "csg-model.schema.json#/$defs/root" }
+      },
+      "required": ["type", "children"],
+      "allOf": [
+        { "$ref": "csg-model.schema.json#/$defs/has-optional-transform" }
+      ]
+    }
+  }
+}

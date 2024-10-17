@@ -1,0 +1,75 @@
+{
+  "$id": "rt/csg-model",
+  "title": "RT CSG model",
+  "description": "CSG model for RT",
+  "$ref": "#/$defs/root",
+  "$defs": {
+    "root": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "voidColor": { "$ref": "base-types.schema.json#/$defs/ldr-color" },
+        "cameraPosition": { "$ref": "base-types.schema.json#/$defs/position" },
+        "cameraDirection": { "$ref": "base-types.schema.json#/$defs/position" },
+        "cameraFov": {
+          "oneOf": [
+            {
+              "type": "object",
+              "unevaluatedProperties": false,
+              "properties": {
+                "x": { "$ref": "base-types.schema.json#/$defs/angle-convex" }
+              },
+              "required": ["x"]
+            },
+            {
+              "type": "object",
+              "unevaluatedProperties": false,
+              "properties": {
+                "y": { "$ref": "base-types.schema.json#/$defs/angle-convex" }
+              },
+              "required": ["y"]
+            }
+          ]
+        },
+        "objects": {
+          "type": "array",
+          "items": { "$ref": "object.schema.json#/$defs/root" },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "defs": {
+          "type": "object",
+          "additionalProperties": { "$ref": "object.schema.json#/$defs/root" }
+        }
+      },
+      "required": ["cameraFov"]
+    },
+    "group": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "type of object",
+          "enum": ["group"]
+        },
+        "children": {
+          "type": "array",
+          "items": { "$ref": "object.schema.json#/$defs/root" }
+        }
+      },
+      "required": ["type", "children"],
+      "allOf": [
+        { "$ref": "csg-model.schema.json#/$defs/has-optional-transform" }
+      ]
+    },
+    "ref": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "ref": { "type": "string", "description": "reference, key of defs" }
+      },
+      "required": ["ref"]
+    }
+  }
+}
