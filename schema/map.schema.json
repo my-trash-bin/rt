@@ -9,7 +9,7 @@
       "type": "object",
       "unevaluatedProperties": false,
       "properties": {
-        "type": { "type": "string", "union": ["texture"] },
+        "type": { "type": "string", "enum": ["texture"] },
         "path": {
           "type": "string",
           "description": "path to texture .bmp file"
@@ -131,7 +131,7 @@
         "from": { "$ref": "#/$defs/map" },
         "subtract": { "$ref": "#/$defs/map" }
       },
-      "required": ["type", "children"]
+      "required": ["type", "from", "subtract"]
     },
     "blend-translate": {
       "type": "object",
@@ -228,6 +228,7 @@
       "type": "object",
       "unevaluatedProperties": false,
       "properties": {
+        "type": { "type": "string", "enum": ["color"] },
         "color": { "$ref": "base-types.schema.json#/$defs/ldr-color" }
       },
       "required": ["color"]

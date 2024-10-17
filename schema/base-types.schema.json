@@ -31,7 +31,7 @@
         }
       ]
     },
-    "angle-fov-plane": {
+    "angle-convex": {
       "oneOf": [
         {
           "type": "object",
@@ -40,8 +40,8 @@
             "rotation": {
               "type": "number",
               "description": "angle in rotation",
-              "minimum": -0.5,
-              "maximum": 1
+              "exclusiveMinimum": -0.5,
+              "exclusiveMaximum": 1
             }
           },
           "required": ["rotation"]
@@ -53,8 +53,8 @@
             "radian": {
               "type": "number",
               "description": "angle in radian",
-              "minimum": -1.5707963267948966,
-              "maximum": 3.141592653589793
+              "exclusiveMinimum": -1.5707963267948966,
+              "exclusiveMaximum": 3.141592653589793
             }
           },
           "required": ["radian"]
@@ -66,8 +66,8 @@
             "degree": {
               "type": "number",
               "description": "angle in degree",
-              "minimum": -90,
-              "maximum": 180
+              "exclusiveMinimum": -90,
+              "exclusiveMaximum": 180
             }
           },
           "required": ["degree"]

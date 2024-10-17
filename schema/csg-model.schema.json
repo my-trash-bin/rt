@@ -31,488 +31,35 @@
         { "$ref": "#/$defs/primitive" }
       ]
     },
-    "angle": {
-      "oneOf": [
-        {
-          "type": "object",
-          "unevaluatedProperties": false,
-          "properties": {
-            "rotation": { "type": "number", "description": "angle in rotation" }
-          },
-          "required": ["rotation"]
-        },
-        {
-          "type": "object",
-          "unevaluatedProperties": false,
-          "properties": {
-            "radian": { "type": "number", "description": "angle in radian" }
-          },
-          "required": ["radian"]
-        },
-        {
-          "type": "object",
-          "unevaluatedProperties": false,
-          "properties": {
-            "degree": { "type": "number", "description": "angle in degree" }
-          },
-          "required": ["degree"]
-        }
-      ]
-    },
-    "angle-fov-plane": {
-      "oneOf": [
-        {
-          "type": "object",
-          "unevaluatedProperties": false,
-          "properties": {
-            "rotation": {
-              "type": "number",
-              "description": "angle in rotation",
-              "minimum": -0.5,
-              "maximum": 1
-            }
-          },
-          "required": ["rotation"]
-        },
-        {
-          "type": "object",
-          "unevaluatedProperties": false,
-          "properties": {
-            "radian": {
-              "type": "number",
-              "description": "angle in radian",
-              "minimum": -1.5707963267948966,
-              "maximum": 3.141592653589793
-            }
-          },
-          "required": ["radian"]
-        },
-        {
-          "type": "object",
-          "unevaluatedProperties": false,
-          "properties": {
-            "degree": {
-              "type": "number",
-              "description": "angle in degree",
-              "minimum": -90,
-              "maximum": 180
-            }
-          },
-          "required": ["degree"]
-        }
-      ]
-    },
-    "position": {
-      "type": "array",
-      "items": {
-        "type": "number",
-        "description": "coordinates of the position [x, y, z]"
-      },
-      "minItems": 3,
-      "maxItems": 3
-    },
-    "direction": {
-      "type": "array",
-      "items": {
-        "type": "number",
-        "description": "direction normal for [x, y, z]",
-        "minimum": -1,
-        "maximum": 1
-      },
-      "minItems": 3,
-      "maxItems": 3
-    },
-    "rotation": {
-      "type": "array",
-      "items": {
-        "type": "number",
-        "description": "rotation angle for [yaw, pitch, roll]"
-      },
-      "prefixItems": [
-        { "description": "rotation angle for yaw", "$ref": "#/$defs/angle" },
-        { "description": "rotation angle for pitch", "$ref": "#/$defs/angle" },
-        { "description": "rotation angle for roll", "$ref": "#/$defs/angle" }
-      ],
-      "minItems": 3,
-      "maxItems": 3
-    },
-    "transform": {
-      "oneOf": [
-        { "$ref": "#/$defs/transform-1" },
-        { "$ref": "#/$defs/transform-n" }
-      ]
-    },
-    "transform-n": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/transform-1" }
-    },
-    "transform-1": {
-      "oneOf": [
-        { "$ref": "#/$defs/transform-translate" },
-        { "$ref": "#/$defs/transform-scale" },
-        { "$ref": "#/$defs/transform-rotate" }
-      ]
-    },
-    "transform-translate": {
-      "type": "object",
-      "unevaluatedProperties": false,
-      "oneOf": [
-        {
-          "properties": {
-            "translate": {
-              "type": "array",
-              "items": {
-                "type": "number",
-                "description": "translate distance [x, y, z]"
-              },
-              "minItems": 3,
-              "maxItems": 3
-            }
-          },
-          "required": ["translate"]
-        },
-        {
-          "properties": {
-            "translateX": { "type": "number" },
-            "translateY": { "type": "number" },
-            "translateZ": { "type": "number" }
-          },
-          "anyOf": [
-            { "required": ["translateX"] },
-            { "required": ["translateY"] },
-            { "required": ["translateZ"] }
-          ]
-        }
-      ]
-    },
-    "transform-scale": {
-      "type": "object",
-      "unevaluatedProperties": false,
-      "oneOf": [
-        {
-          "properties": {
-            "scale": {
-              "type": "array",
-              "items": { "type": "number", "description": "scale [x, y, z]" },
-              "minItems": 3,
-              "maxItems": 3
-            }
-          },
-          "required": ["scale"]
-        },
-        {
-          "properties": {
-            "scaleX": { "type": "number" },
-            "scaleY": { "type": "number" },
-            "scaleZ": { "type": "number" }
-          },
-          "anyOf": [
-            { "required": ["scaleX"] },
-            { "required": ["scaleY"] },
-            { "required": ["scaleZ"] }
-          ]
-        }
-      ]
-    },
-    "transform-rotate": {
-      "type": "object",
-      "unevaluatedProperties": false,
-      "properties": { "origin": { "$ref": "#/$defs/position" } },
-      "oneOf": [
-        {
-          "properties": { "rotate": { "$ref": "#/$defs/rotation" } },
-          "required": ["rotate"]
-        },
-        {
-          "properties": { "rotateX": { "$ref": "#/$defs/angle" } },
-          "anyOf": [{ "required": ["rotateX"] }]
-        },
-        {
-          "properties": { "rotateY": { "$ref": "#/$defs/angle" } },
-          "anyOf": [{ "required": ["rotateY"] }]
-        },
-        {
-          "properties": { "rotateZ": { "$ref": "#/$defs/angle" } },
-          "anyOf": [{ "required": ["rotateZ"] }]
-        }
-      ]
-    },
-    "has-optional-position": {
-      "properties": { "position": { "$ref": "#/$defs/position" } }
-    },
-    "has-optional-rotation": {
-      "properties": { "rotation": { "$ref": "#/$defs/rotation" } }
-    },
-    "has-optional-transform": {
-      "properties": { "transform": { "$ref": "#/$defs/transform" } }
-    },
-    "ldr-color": {
-      "type": "array",
-      "items": {
-        "type": "number",
-        "description": "color value [red, green, blue] in low dynamic range",
-        "minimum": 0,
-        "maximum": 1
-      },
-      "minItems": 3,
-      "maxItems": 3
-    },
-    "hdr-color": {
-      "type": "array",
-      "items": {
-        "type": "number",
-        "description": "color value [red, green, blue] in high dynamic range",
-        "minimum": 0
-      },
-      "minItems": 3,
-      "maxItems": 3
-    },
-    "texture": {
-      "type": "object",
-      "unevaluatedProperties": false,
-      "properties": {
-        "type": { "type": "string", "union": ["texture"] },
-        "path": {
-          "type": "string",
-          "description": "path to texture .bmp file"
-        },
-        "size": {
-          "type": "array",
-          "items": {
-            "type": "number",
-            "description": "size of texture [width, height], default is [1, 1]",
-            "exclusiveMinimum": 0
-          },
-          "minItems": 2,
-          "maxItems": 2
-        },
-        "offset": {
-          "type": "array",
-          "items": {
-            "type": "number",
-            "description": "offset of texture [x, y], default is [0, 0]",
-            "exclusiveMinimum": 0
-          },
-          "minItems": 2,
-          "maxItems": 2
-        },
-        "shear": {
-          "type": "array",
-          "items": {
-            "type": "number",
-            "description": "shear of texture [x, y], default is [0, 0]",
-            "exclusiveMinimum": 0
-          },
-          "minItems": 2,
-          "maxItems": 2
-        },
-        "nearest": {
-          "type": "boolean",
-          "description": "filter mode - true: nearest, false: linear. default is false"
-        },
-        "mirror": {
-          "type": "boolean",
-          "description": "address mode - true: mirror, false: wrap. default is false"
-        }
-      },
-      "required": ["type", "path"]
-    },
-    "blend-add": {
-      "type": "object",
-      "unevaluatedProperties": false,
-      "properties": {
-        "type": {
-          "type": "string",
-          "description": "texture, or type of blend operation",
-          "enum": ["add"]
-        },
-        "children": {
-          "type": "array",
-          "items": { "$ref": "#/$defs/map", "minItems": 2 }
-        }
-      },
-      "required": ["type", "children"]
-    },
-    "blend-multiply": {
-      "type": "object",
-      "unevaluatedProperties": false,
-      "properties": {
-        "type": {
-          "type": "string",
-          "description": "texture, or type of blend operation",
-          "enum": ["multiply"]
-        },
-        "children": {
-          "type": "array",
-          "items": { "$ref": "#/$defs/map", "minItems": 2 }
-        }
-      },
-      "required": ["type", "children"]
-    },
-    "blend-maximum": {
-      "type": "object",
-      "unevaluatedProperties": false,
-      "properties": {
-        "type": {
-          "type": "string",
-          "description": "texture, or type of blend operation",
-          "enum": ["maximum"]
-        },
-        "children": {
-          "type": "array",
-          "items": { "$ref": "#/$defs/map", "minItems": 2 }
-        }
-      },
-      "required": ["type", "children"]
-    },
-    "blend-minimum": {
-      "type": "object",
-      "unevaluatedProperties": false,
-      "properties": {
-        "type": {
-          "type": "string",
-          "description": "texture, or type of blend operation",
-          "enum": ["minimum"]
-        },
-        "children": {
-          "type": "array",
-          "items": { "$ref": "#/$defs/map", "minItems": 2 }
-        }
-      },
-      "required": ["type", "children"]
-    },
-    "blend-subtract": {
-      "type": "object",
-      "unevaluatedProperties": false,
-      "properties": {
-        "type": {
-          "type": "string",
-          "description": "texture, or type of blend operation",
-          "enum": ["subtract"]
-        },
-        "from": { "$ref": "#/$defs/map" },
-        "subtract": { "$ref": "#/$defs/map" }
-      },
-      "required": ["type", "children"]
-    },
-    "blend-translate": {
-      "type": "object",
-      "unevaluatedProperties": false,
-      "properties": {
-        "type": {
-          "type": "string",
-          "description": "texture, or type of blend operation",
-          "enum": ["translate"]
-        },
-        "original": { "$ref": "#/$defs/map" },
-        "translate": {
-          "type": "array",
-          "items": {
-            "type": "number",
-            "description": "translate distance [x, y]"
-          },
-          "minItems": 2,
-          "maxItems": 2
-        }
-      },
-      "required": ["type", "original", "translate"]
-    },
-    "blend-scale": {
-      "type": "object",
-      "unevaluatedProperties": false,
-      "properties": {
-        "type": {
-          "type": "string",
-          "description": "texture, or type of blend operation",
-          "enum": ["scale"]
-        },
-        "original": { "$ref": "#/$defs/map" },
-        "scale": {
-          "type": "array",
-          "items": {
-            "type": "number",
-            "description": "scale [x, y]"
-          },
-          "minItems": 2,
-          "maxItems": 2
-        }
-      },
-      "required": ["type", "original", "scale"]
-    },
-    "blend-filter": {
-      "type": "object",
-      "unevaluatedProperties": false,
-      "properties": {
-        "type": {
-          "type": "string",
-          "description": "texture, or type of blend operation",
-          "enum": ["filter"]
-        },
-        "original": { "$ref": "#/$defs/map" },
-        "filter": {
-          "description": "4x3 matrix to transform 1x4 matrix [r, g, b, 1] into [r, g, b]",
-          "oneOf": [
-            {
-              "type": "array",
-              "items": { "type": "number" },
-              "minItems": 12,
-              "maxItems": 12
-            },
-            {
-              "type": "array",
-              "items": {
-                "type": "array",
-                "items": { "type": "number" },
-                "minItems": 3,
-                "maxItems": 3
-              },
-              "minItems": 4,
-              "maxItems": 4
-            }
-          ]
-        }
-      },
-      "required": ["type", "original", "filter"]
-    },
-    "blend": {
-      "oneOf": [
-        { "$ref": "#/$defs/blend-add" },
-        { "$ref": "#/$defs/blend-multiply" },
-        { "$ref": "#/$defs/blend-maximum" },
-        { "$ref": "#/$defs/blend-minimum" },
-        { "$ref": "#/$defs/blend-subtract" },
-        { "$ref": "#/$defs/blend-translate" },
-        { "$ref": "#/$defs/blend-scale" },
-        { "$ref": "#/$defs/blend-filter" }
-      ]
-    },
-    "map": {
-      "oneOf": [
-        { "$ref": "#/$defs/texture" },
-        { "$ref": "#/$defs/blend" },
-        { "$ref": "#/$defs/ldr-color" }
-      ]
-    },
     "material": {
       "type": "object",
       "unevaluatedProperties": false,
       "properties": {
-        "ambient": { "$ref": "#/$defs/map" },
-        "diffuse": { "$ref": "#/$defs/map" },
-        "specular": { "$ref": "#/$defs/map" },
+        "ambient": { "$ref": "map.schema.json#/$defs/map" },
+        "diffuse": { "$ref": "map.schema.json#/$defs/map" },
+        "specular": { "$ref": "map.schema.json#/$defs/map" },
         "specularLobe": { "type": "number" },
-        "normal": { "$ref": "#/$defs/map" }
+        "normal": { "$ref": "map.schema.json#/$defs/map" }
       }
     },
     "material-no-map": {
       "type": "object",
       "unevaluatedProperties": false,
       "properties": {
-        "ambient": { "$ref": "#/$defs/ldr-color" },
-        "diffuse": { "$ref": "#/$defs/ldr-color" },
-        "specular": { "$ref": "#/$defs/ldr-color" },
+        "ambient": { "$ref": "base-types.schema.json#/$defs/ldr-color" },
+        "diffuse": { "$ref": "base-types.schema.json#/$defs/ldr-color" },
+        "specular": { "$ref": "base-types.schema.json#/$defs/ldr-color" },
         "specularLobe": { "type": "number" }
       }
+    },
+    "has-optional-position": {
+      "properties": { "position": { "$ref": "base-types.schema.json#/$defs/position" } }
+    },
+    "has-optional-rotation": {
+      "properties": { "rotation": { "$ref": "base-types.schema.json#/$defs/rotation" } }
+    },
+    "has-optional-transform": {
+      "properties": { "transform": { "$ref": "base-types.schema.json#/$defs/transform" } }
     },
     "group": {
       "type": "object",
@@ -863,7 +410,7 @@
                 },
                 "color": {
                   "description": "transmission filter color",
-                  "$ref": "#/$defs/ldr-color"
+                  "$ref": "base-types.schema.json#/$defs/ldr-color"
                 },
                 "opticalDensity": {
                   "type": "number",
@@ -914,8 +461,8 @@
           "description": "type of light",
           "enum": ["point"]
         },
-        "color": { "$ref": "#/$defs/hdr-color" },
-        "position": { "$ref": "#/$defs/position" },
+        "color": { "$ref": "base-types.schema.json#/$defs/hdr-color" },
+        "position": { "$ref": "base-types.schema.json#/$defs/position" },
         "range": {
           "type": "number",
           "description": "default is infinity",
@@ -937,8 +484,8 @@
           "description": "type of light",
           "enum": ["directional"]
         },
-        "color": { "$ref": "#/$defs/hdr-color" },
-        "direction": { "$ref": "#/$defs/direction" }
+        "color": { "$ref": "base-types.schema.json#/$defs/hdr-color" },
+        "direction": { "$ref": "base-types.schema.json#/$defs/direction" }
       },
       "required": ["type", "color", "direction"]
     },
@@ -951,13 +498,13 @@
           "description": "type of light",
           "enum": ["spot"]
         },
-        "color": { "$ref": "#/$defs/hdr-color" },
-        "position": { "$ref": "#/$defs/position" },
+        "color": { "$ref": "base-types.schema.json#/$defs/hdr-color" },
+        "position": { "$ref": "base-types.schema.json#/$defs/position" },
         "angle": {
           "description": "angle for the spot light",
-          "$ref": "#/$defs/angle-spot"
+          "$ref": "base-types.schema.json#/$defs/angle-convex"
         },
-        "direction": { "$ref": "#/$defs/direction" },
+        "direction": { "$ref": "base-types.schema.json#/$defs/direction" },
         "range": {
           "type": "number",
           "description": "default is infinity",
