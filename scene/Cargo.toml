@@ -1,0 +1,8 @@
+[package]
+name = "scene"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+core = { version = "0.1.0", path = "../core" }
+types = { version = "0.1.0", path = "../types" }

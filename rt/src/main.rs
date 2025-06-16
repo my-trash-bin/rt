@@ -3,9 +3,9 @@ use std::error::Error;
 
 #[derive(Debug)]
 struct Vec3 {
-    x: f32,
-    y: f32,
-    z: f32,
+    x: f64,
+    y: f64,
+    z: f64,
 }
 
 #[derive(Debug)]
@@ -23,8 +23,8 @@ struct Args {
     emit_normal: bool,
     emit_distance: bool,
     jobs: Option<usize>,
-    gamma: Option<f32>,
-    exposure: Option<f32>,
+    gamma: Option<f64>,
+    exposure: Option<f64>,
     ldr: bool,
 }
 

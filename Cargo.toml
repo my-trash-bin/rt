@@ -2,10 +2,13 @@
 resolver = "2"
 members = [
   "bmp",
-  "pack",
-  "pack_cli",
+  "core",
   "json",
   "json_minifier_cli",
+  "pack",
+  "pack_cli",
   "rt",
+  "scene",
+  "types",
 ]
 default-members = ["rt"]
