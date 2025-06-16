@@ -9,67 +9,101 @@
       "unevaluatedProperties": false,
       "properties": {
         "voidColor": { "$ref": "base-types.schema.json#/$defs/ldr-color" },
-        "cameraPosition": { "$ref": "base-types.schema.json#/$defs/position" },
-        "cameraDirection": { "$ref": "base-types.schema.json#/$defs/position" },
-        "cameraFov": {
-          "oneOf": [
-            {
-              "type": "object",
-              "unevaluatedProperties": false,
-              "properties": {
-                "x": { "$ref": "base-types.schema.json#/$defs/angle-convex" }
-              },
-              "required": ["x"]
-            },
-            {
-              "type": "object",
-              "unevaluatedProperties": false,
-              "properties": {
-                "y": { "$ref": "base-types.schema.json#/$defs/angle-convex" }
-              },
-              "required": ["y"]
-            }
-          ]
-        },
+        "ambientLight": { "$ref": "base-types.schema.json#/$defs/hdr-color" },
+        "hdr": { "oneOf": [{ "$ref": "#/$defs/hdr" }, { "type": "null" }] },
+        "camera": { "$ref": "#/$defs/camera" },
         "objects": {
           "type": "array",
-          "items": { "$ref": "object.schema.json#/$defs/root" },
-          "minItems": 3,
-          "maxItems": 3
+          "items": { "$ref": "object.schema.json#/$defs/root" }
         },
         "defs": {
           "type": "object",
           "additionalProperties": { "$ref": "object.schema.json#/$defs/root" }
         }
       },
-      "required": ["cameraFov"]
+      "required": ["camera"]
     },
-    "group": {
-      "type": "object",
-      "unevaluatedProperties": false,
-      "properties": {
-        "type": {
-          "type": "string",
-          "description": "type of object",
-          "enum": ["group"]
-        },
-        "children": {
-          "type": "array",
-          "items": { "$ref": "object.schema.json#/$defs/root" }
-        }
-      },
-      "required": ["type", "children"],
-      "allOf": [
-        { "$ref": "csg-model.schema.json#/$defs/has-optional-transform" }
+    "camera": {
+      "oneOf": [
+        { "$ref": "#/$defs/camera-direction" },
+        { "$ref": "#/$defs/camera-look-at" }
       ]
     },
-    "ref": {
+    "camera-direction": {
       "type": "object",
       "unevaluatedProperties": false,
       "properties": {
-        "ref": { "type": "string", "description": "reference, key of defs" }
+        "fov": { "$ref": "#/$defs/camera-fov" },
+        "position": { "$ref": "base-types.schema.json#/$defs/position" },
+        "direction": { "$ref": "base-types.schema.json#/$defs/direction" }
       },
-      "required": ["ref"]
+      "required": ["fov", "position", "direction"]
+    },
+    "camera-look-at": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "fov": { "$ref": "#/$defs/camera-fov" },
+        "position": { "$ref": "base-types.schema.json#/$defs/position" },
+        "lookAt": { "$ref": "base-types.schema.json#/$defs/position" }
+      },
+      "required": ["fov", "position", "lookAt"]
+    },
+    "camera-fov": {
+      "oneOf": [
+        { "$ref": "#/$defs/camera-fov-x" },
+        { "$ref": "#/$defs/camera-fov-y" },
+        { "$ref": "#/$defs/camera-fov-min" },
+        { "$ref": "#/$defs/camera-fov-max" }
+      ]
+    },
+    "camera-fov-x": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "x": { "$ref": "base-types.schema.json#/$defs/angle-convex" }
+      },
+      "required": ["x"]
+    },
+    "camera-fov-y": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "y": { "$ref": "base-types.schema.json#/$defs/angle-convex" }
+      },
+      "required": ["y"]
+    },
+    "camera-fov-min": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "min": { "$ref": "base-types.schema.json#/$defs/angle-convex" }
+      },
+      "required": ["min"]
+    },
+    "camera-fov-max": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "max": { "$ref": "base-types.schema.json#/$defs/angle-convex" }
+      },
+      "required": ["max"]
+    },
+    "ambient-light": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "color": { "$ref": "base-types.schema.json#/$defs/ldr-color" }
+      },
+      "required": ["color"]
+    },
+    "hdr": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "gamma": { "type": "number" },
+        "exposure": { "type": "number" }
+      }
     }
   }
 }

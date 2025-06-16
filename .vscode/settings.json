@@ -20,7 +20,7 @@
       "url": "./schema/object.schema.json",
     },
     {
-      "fileMatch": ["*.scene.rt"],
+      "fileMatch": ["*.scene.rt", "scene.rt"],
       "url": "./schema/scene.schema.json",
     },
   ],

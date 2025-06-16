@@ -20,12 +20,15 @@ struct Args {
     camera_look_at: Option<Vec3>,
     stdout: bool,
     super_sampling: Option<usize>,
+    ambient_light: Option<Vec3>,
+    void_color: Option<Vec3>,
     emit_normal: bool,
     emit_distance: bool,
     jobs: Option<usize>,
     gamma: Option<f64>,
     exposure: Option<f64>,
     ldr: bool,
+    no_ldr: bool,
 }
 
 #[derive(Debug)]
@@ -35,10 +38,10 @@ enum ArgsResult {
     Version,
 }
 
-fn parse_vec3(s: &str) -> Result<Vec3, Box<dyn Error>> {
+fn parse_vec3(s: &str, name: &str) -> Result<Vec3, Box<dyn Error>> {
     let parts: Vec<_> = s.split(',').collect();
     if parts.len() != 3 {
-        return Err(format!("Expected format x,y,z but got '{}'", s).into());
+        return Err(format!("Expected format x,y,z for {} but got '{}'", name, s).into());
     }
     Ok(Vec3 {
         x: parts[0].parse()?,
@@ -66,12 +69,15 @@ fn args() -> Result<ArgsResult, Box<dyn Error>> {
         camera_look_at: None,
         stdout: false,
         super_sampling: None,
+        ambient_light: None,
+        void_color: None,
         emit_normal: false,
         emit_distance: false,
         jobs: None,
         gamma: None,
         exposure: None,
         ldr: false,
+        no_ldr: false,
     };
     let mut positionals = vec![];
 
@@ -120,6 +126,7 @@ fn args() -> Result<ArgsResult, Box<dyn Error>> {
                 "camera-position" => {
                     result.camera_position = Some(parse_vec3(
                         value.ok_or("Missing --camera-position")?.as_str(),
+                        "camera-position",
                     )?)
                 }
                 "camera-direction" => {
@@ -130,6 +137,7 @@ fn args() -> Result<ArgsResult, Box<dyn Error>> {
                     }
                     result.camera_direction = Some(parse_vec3(
                         value.ok_or("Missing --camera-direction")?.as_str(),
+                        "camera-direction",
                     )?)
                 }
                 "camera-look-at" => {
@@ -140,6 +148,7 @@ fn args() -> Result<ArgsResult, Box<dyn Error>> {
                     }
                     result.camera_look_at = Some(parse_vec3(
                         value.ok_or("Missing --camera-look-at")?.as_str(),
+                        "camera-look-at",
                     )?)
                 }
                 "stdout" => {
@@ -152,6 +161,18 @@ fn args() -> Result<ArgsResult, Box<dyn Error>> {
                     result.super_sampling = Some(parse(
                         value.ok_or("Missing --super-sampling")?.as_str(),
                         "super-sampling",
+                    )?)
+                }
+                "ambient-light" => {
+                    result.ambient_light = Some(parse_vec3(
+                        value.ok_or("Missing --ambient-light")?.as_str(),
+                        "ambient-light",
+                    )?)
+                }
+                "void-color" => {
+                    result.void_color = Some(parse_vec3(
+                        value.ok_or("Missing --void-color")?.as_str(),
+                        "void-color",
                     )?)
                 }
                 "emit-normal" => result.emit_normal = true,
@@ -175,10 +196,18 @@ fn args() -> Result<ArgsResult, Box<dyn Error>> {
                     )?)
                 }
                 "ldr" => {
-                    if result.gamma.is_some() || result.exposure.is_some() {
-                        return Err("--ldr and --gamma/--exposure are mutually exclusive".into());
+                    if result.gamma.is_some() || result.exposure.is_some() || result.no_ldr {
+                        return Err(
+                            "--ldr and --gamma/--exposure/--no-ldr are mutually exclusive".into(),
+                        );
                     }
                     result.ldr = true;
+                }
+                "no-ldr" => {
+                    if result.ldr {
+                        return Err("--no-ldr and --ldr are mutually exclusive".into());
+                    }
+                    result.no_ldr = true;
                 }
                 _ => return Err(format!("Unknown option --{}", flag).into()),
             }
@@ -195,7 +224,7 @@ fn args() -> Result<ArgsResult, Box<dyn Error>> {
                         }
                         result.stdout = true;
                     }
-                    'W' | 'H' | 's' | 'j' | 'g' | 'e' => {
+                    'W' | 'H' | 's' | 'a' | 'v' | 'j' | 'g' | 'e' | 'P' | 'D' | 'L' => {
                         let mut val: String = chars.collect();
                         if val.is_empty() {
                             i += 1;
@@ -208,6 +237,8 @@ fn args() -> Result<ArgsResult, Box<dyn Error>> {
                             'W' => result.width = Some(parse(&val, "-W")?),
                             'H' => result.height = Some(parse(&val, "-H")?),
                             's' => result.super_sampling = Some(parse(&val, "-s")?),
+                            'a' => result.ambient_light = Some(parse_vec3(&val, "-a")?),
+                            'v' => result.void_color = Some(parse_vec3(&val, "-v")?),
                             'j' => result.jobs = Some(parse(&val, "-j")?),
                             'g' => {
                                 if result.ldr {
@@ -221,52 +252,20 @@ fn args() -> Result<ArgsResult, Box<dyn Error>> {
                                 }
                                 result.exposure = Some(parse(&val, "-e")?)
                             }
+                            'P' => result.camera_position = Some(parse_vec3(&val, "-P")?),
+                            'D' => {
+                                if result.camera_look_at.is_some() {
+                                    return Err("-D and -L are mutually exclusive".into());
+                                }
+                                result.camera_direction = Some(parse_vec3(&val, "-D")?)
+                            }
+                            'L' => {
+                                if result.camera_direction.is_some() {
+                                    return Err("-L and -D are mutually exclusive".into());
+                                }
+                                result.camera_look_at = Some(parse_vec3(&val, "-L")?)
+                            }
                             _ => {}
-                        }
-                        break;
-                    }
-                    'P' => {
-                        let val: String = chars.collect();
-                        if !val.is_empty() {
-                            result.camera_position = Some(parse_vec3(&val)?);
-                        } else {
-                            i += 1;
-                            if i >= args.len() {
-                                return Err("Missing value for -P".into());
-                            }
-                            result.camera_position = Some(parse_vec3(&args[i])?);
-                        }
-                        break;
-                    }
-                    'D' => {
-                        if result.camera_look_at.is_some() {
-                            return Err("-D and -L are mutually exclusive".into());
-                        }
-                        let val: String = chars.collect();
-                        if !val.is_empty() {
-                            result.camera_direction = Some(parse_vec3(&val)?);
-                        } else {
-                            i += 1;
-                            if i >= args.len() {
-                                return Err("Missing value for -D".into());
-                            }
-                            result.camera_direction = Some(parse_vec3(&args[i])?);
-                        }
-                        break;
-                    }
-                    'L' => {
-                        if result.camera_direction.is_some() {
-                            return Err("-L and -D are mutually exclusive".into());
-                        }
-                        let val: String = chars.collect();
-                        if !val.is_empty() {
-                            result.camera_look_at = Some(parse_vec3(&val)?);
-                        } else {
-                            i += 1;
-                            if i >= args.len() {
-                                return Err("Missing value for -L".into());
-                            }
-                            result.camera_look_at = Some(parse_vec3(&args[i])?);
                         }
                         break;
                     }

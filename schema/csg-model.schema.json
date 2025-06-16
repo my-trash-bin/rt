@@ -29,28 +29,29 @@
       "type": "object",
       "unevaluatedProperties": false,
       "properties": {
-        "ambient": { "$ref": "map.schema.json#/$defs/map" },
-        "diffuse": { "$ref": "map.schema.json#/$defs/map" },
-        "specular": { "$ref": "map.schema.json#/$defs/map" },
+        "ambient": { "$ref": "#/$defs/map" },
+        "diffuse": { "$ref": "#/$defs/map" },
+        "specular": { "$ref": "#/$defs/map" },
         "specularLobe": { "type": "number" },
-        "normal": { "$ref": "map.schema.json#/$defs/map" }
+        "normal": { "$ref": "#/$defs/map" }
       }
     },
     "material-no-map": {
       "type": "object",
       "unevaluatedProperties": false,
       "properties": {
-        "ambient": { "$ref": "base-types.schema.json#/$defs/ldr-color" },
-        "diffuse": { "$ref": "base-types.schema.json#/$defs/ldr-color" },
-        "specular": { "$ref": "base-types.schema.json#/$defs/ldr-color" },
-        "specularLobe": { "type": "number" }
+        "ambient": { "type": "number" },
+        "diffuse": { "type": "number" },
+        "specular": { "type": "number" },
+        "specularLobe": { "type": "number" },
+        "normal": { "type": "number" }
       }
     },
-    "has-optional-position": {
-      "properties": { "position": { "$ref": "base-types.schema.json#/$defs/position" } }
-    },
-    "has-optional-rotation": {
-      "properties": { "rotation": { "$ref": "base-types.schema.json#/$defs/rotation" } }
+    "map": {
+      "oneOf": [
+        { "type": "number", "description": "constant value" },
+        { "type": "string", "description": "path to map" }
+      ]
     },
     "has-optional-transform": {
       "properties": { "transform": { "$ref": "base-types.schema.json#/$defs/transform" } }
@@ -73,8 +74,6 @@
       },
       "required": ["type"],
       "allOf": [
-        { "$ref": "#/$defs/has-optional-position" },
-        { "$ref": "#/$defs/has-optional-rotation" },
         { "$ref": "#/$defs/has-optional-transform" }
       ]
     },
@@ -114,8 +113,6 @@
       },
       "required": ["type"],
       "allOf": [
-        { "$ref": "#/$defs/has-optional-position" },
-        { "$ref": "#/$defs/has-optional-rotation" },
         { "$ref": "#/$defs/has-optional-transform" }
       ]
     },
@@ -155,8 +152,6 @@
       },
       "required": ["type"],
       "allOf": [
-        { "$ref": "#/$defs/has-optional-position" },
-        { "$ref": "#/$defs/has-optional-rotation" },
         { "$ref": "#/$defs/has-optional-transform" }
       ]
     },
@@ -193,16 +188,14 @@
                 "$ref": "#/$defs/material",
                 "description": "material for [top, bottom, left, right, front, back]"
               },
-              "minItems": 3,
-              "maxItems": 3
+              "minItems": 6,
+              "maxItems": 6
             }
           ]
         }
       },
       "required": ["type"],
       "allOf": [
-        { "$ref": "#/$defs/has-optional-position" },
-        { "$ref": "#/$defs/has-optional-rotation" },
         { "$ref": "#/$defs/has-optional-transform" }
       ]
     },
@@ -229,8 +222,6 @@
       },
       "required": ["type"],
       "allOf": [
-        { "$ref": "#/$defs/has-optional-position" },
-        { "$ref": "#/$defs/has-optional-rotation" },
         { "$ref": "#/$defs/has-optional-transform" }
       ]
     },
@@ -275,7 +266,8 @@
           "z": { "type": "number" },
           "1": { "type": "number" }
         },
-        "isInside": { "type": "boolean" },
+        "isPointInside": { "type": "boolean" },
+        "point": { "$ref": "base-types.schema.json#/$defs/position" },
         "material": { "$ref": "#/$defs/material-no-map" }
       },
       "required": ["coefficients"],
