@@ -1,13 +1,9 @@
 use super::RTObject;
 use core::types::{
-    math::{Direction, Position, Vec3},
+    math::{Direction, Position},
     rt::{Hit, Ray},
 };
 use types::LDRColor;
-
-fn up() -> Direction {
-    Direction::new(Vec3::Z)
-}
 
 #[derive(Clone, Debug)]
 pub struct Plane {

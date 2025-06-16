@@ -16,10 +16,6 @@ pub enum FovMode {
     Contain(AspectRatio),
 }
 
-fn forward() -> Direction {
-    Direction::new(Vec3::Y)
-}
-
 #[derive(Clone, Debug)]
 pub struct DeserializablePerspectiveCamera {
     fov: f64,

@@ -85,8 +85,12 @@ fn args() -> Result<ArgsResult, Box<dyn Error>> {
             return Ok(ArgsResult::Version);
         }
 
-        if arg.starts_with("--") {
-            let parts: Vec<_> = arg[2..].splitn(2, '=').collect();
+        if let Some(arg) = arg.strip_prefix("--") {
+            let parts: Vec<_> = arg
+                .split_once('=')
+                .iter()
+                .flat_map(|x| vec![x.0, x.1])
+                .collect();
             let flag = parts[0];
             let value = if parts.len() == 2 {
                 Some(parts[1].to_string())

@@ -1,12 +1,8 @@
 use core::types::{
-    math::{Direction, Position, Vec3},
+    math::{Direction, Position},
     rt::Light,
 };
 use types::HDRColor;
-
-fn down() -> Direction {
-    Direction::new(-Vec3::Z)
-}
 
 #[derive(Clone, Debug)]
 pub struct DirectionalLight {
