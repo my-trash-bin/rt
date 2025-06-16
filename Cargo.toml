@@ -8,3 +8,4 @@ members = [
   "json_minifier_cli",
   "rt",
 ]
+default-members = ["rt"]
