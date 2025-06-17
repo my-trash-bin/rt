@@ -15,3 +15,9 @@ impl Light for DirectionalLight {
         Some((self.color, -self.direction, f64::INFINITY))
     }
 }
+
+impl DirectionalLight {
+    pub fn new(color: HDRColor, direction: Direction) -> Self {
+        DirectionalLight { color, direction }
+    }
+}

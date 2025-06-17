@@ -42,6 +42,16 @@ impl Default for HDRColor {
     }
 }
 
+impl HDRColor {
+    pub fn new(r: f64, g: f64, b: f64) -> HDRColor {
+        HDRColor {
+            r: r.min(1.0),
+            g: g.min(1.0),
+            b: b.min(1.0),
+        }
+    }
+}
+
 impl LDRColor {
     pub fn new(r: f64, g: f64, b: f64) -> LDRColor {
         LDRColor {

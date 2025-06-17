@@ -8,6 +8,8 @@ use types::HDRColor;
 pub struct PointLight {
     position: Position,
     color: HDRColor,
+    range: f64,
+    attenuation: bool,
 }
 
 impl Light for PointLight {
@@ -24,5 +26,16 @@ impl Light for PointLight {
         let attenuated_color = self.color * attenuation_factor;
 
         Some((attenuated_color, direction, distance))
+    }
+}
+
+impl PointLight {
+    pub fn new(color: HDRColor, position: Position, range: f64, attenuation: bool) -> Self {
+        PointLight {
+            color,
+            position,
+            range,
+            attenuation,
+        }
     }
 }

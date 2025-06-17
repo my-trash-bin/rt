@@ -1,3 +1,5 @@
+use json::JsonValue;
+use scene::DeserializableScene;
 use std::env;
 use std::error::Error;
 
@@ -299,8 +301,18 @@ fn args() -> Result<ArgsResult, Box<dyn Error>> {
 }
 
 fn main() {
+    println!("Program entry point");
     match args() {
-        Ok(ArgsResult::Ok(a)) => println!("Parsed args: {:?}", a),
+        Ok(ArgsResult::Ok(a)) => {
+            if let Err(e) = (|| -> Result<(), String> {
+                let json_content = std::fs::read_to_string(&a.input).map_err(|e| e.to_string())?;
+                let json_value = JsonValue::new(&json_content)?;
+                let _scene = DeserializableScene::from_json(json_value)?;
+                Ok(())
+            })() {
+                eprintln!("Error: {}", e);
+            }
+        }
         Ok(ArgsResult::Help) => println!("Usage: ..."),
         Ok(ArgsResult::Version) => println!("Version 1.0"),
         Err(e) => {

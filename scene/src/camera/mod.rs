@@ -1,8 +1,10 @@
 use core::types::rt::Camera;
+use json::JsonValue;
 use perspective::DeserializablePerspectiveCamera;
 
 pub mod perspective;
 
+#[derive(Debug)]
 pub enum DeserializableCamera {
     Perspective(DeserializablePerspectiveCamera),
 }
@@ -12,5 +14,11 @@ impl DeserializableCamera {
         match self {
             DeserializableCamera::Perspective(c) => c.into_camera(screen_aspect_ratio),
         }
+    }
+
+    pub fn from_json(json: &JsonValue) -> Result<DeserializableCamera, String> {
+        return Ok(DeserializableCamera::Perspective(
+            DeserializablePerspectiveCamera::from_json(json)?,
+        ));
     }
 }

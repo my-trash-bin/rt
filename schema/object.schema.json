@@ -1,7 +1,7 @@
 {
-  "$id": "rt/csg-model",
-  "title": "RT CSG model",
-  "description": "CSG model for RT",
+  "$id": "rt/object",
+  "title": "RT object",
+  "description": "object for RT",
   "$ref": "#/$defs/root",
   "$defs": {
     "root": {
