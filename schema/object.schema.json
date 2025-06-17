@@ -92,7 +92,7 @@
         },
         "model": { "$ref": "csg-model.schema.json#/$defs/root" }
       },
-      "required": ["type", "children"],
+      "required": ["type", "model"],
       "allOf": [
         { "$ref": "csg-model.schema.json#/$defs/has-optional-transform" }
       ]
