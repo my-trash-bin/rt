@@ -1,4 +1,7 @@
 # rt
 
 ## build and run
-cargo run --bin rt input.json
+
+```sh
+cargo run -- input.scene.rt
+```

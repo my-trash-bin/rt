@@ -46,11 +46,11 @@
             "type": "sphere",
             "radius": 2,
             "material": {
-              "ambient": 0.1,
-              "diffuse": 0.8,
-              "specular": 0.3,
+              "ambient": [0.1, 0.1, 0.1],
+              "diffuse": [0.8, 0.8, 0.8],
+              "specular": [0.3, 0.3, 0.3],
               "specularLobe": 32,
-              "normal": 1.0
+              "normal": [1.0, 1.0, 1.0]
             },
             "transform": [
               {
@@ -69,38 +69,38 @@
               "material": [
                 {
                   "ambient": "textures/top.jpg",
-                  "diffuse": 0.9,
-                  "specular": 0.1,
+                  "diffuse": [0.9, 0.9, 0.9],
+                  "specular": [0.1, 0.1, 0.1],
                   "specularLobe": 16
                 },
                 {
-                  "ambient": 0.2,
-                  "diffuse": 0.7,
-                  "specular": 0.2,
+                  "ambient": [0.2, 0.2, 0.2],
+                  "diffuse": [0.7, 0.7, 0.7],
+                  "specular": [0.2, 0.2, 0.2],
                   "specularLobe": 24
                 },
                 {
-                  "ambient": 0.15,
-                  "diffuse": 0.8,
-                  "specular": 0.25,
+                  "ambient": [0.15, 0.15, 0.15],
+                  "diffuse": [0.8, 0.8, 0.8],
+                  "specular": [0.25, 0.25, 0.25],
                   "specularLobe": 20
                 },
                 {
-                  "ambient": 0.1,
-                  "diffuse": 0.85,
-                  "specular": 0.15,
+                  "ambient": [0.1, 0.1, 0.1],
+                  "diffuse": [0.85, 0.85, 0.85],
+                  "specular": [0.15, 0.15, 0.15],
                   "specularLobe": 28
                 },
                 {
-                  "ambient": 0.12,
-                  "diffuse": 0.75,
-                  "specular": 0.3,
+                  "ambient": [0.12, 0.12, 0.12],
+                  "diffuse": [0.75, 0.75, 0.75],
+                  "specular": [0.3, 0.3, 0.3],
                   "specularLobe": 18
                 },
                 {
-                  "ambient": 0.18,
-                  "diffuse": 0.82,
-                  "specular": 0.22,
+                  "ambient": [0.18, 0.18, 0.18],
+                  "diffuse": [0.82, 0.82, 0.82],
+                  "specular": [0.22, 0.22, 0.22],
                   "specularLobe": 22
                 }
               ],
@@ -119,21 +119,21 @@
                 "height": 4,
                 "material": [
                   {
-                    "ambient": 0.1,
-                    "diffuse": 0.6,
-                    "specular": 0.4,
+                    "ambient": [0.1, 0.1, 0.1],
+                    "diffuse": [0.6, 0.6, 0.6],
+                    "specular": [0.4, 0.4, 0.4],
                     "specularLobe": 40
                   },
                   {
-                    "ambient": 0.2,
-                    "diffuse": 0.8,
-                    "specular": 0.2,
+                    "ambient": [0.2, 0.2, 0.2],
+                    "diffuse": [0.8, 0.8, 0.8],
+                    "specular": [0.2, 0.2, 0.2],
                     "specularLobe": 30
                   },
                   {
-                    "ambient": 0.15,
-                    "diffuse": 0.7,
-                    "specular": 0.35,
+                    "ambient": [0.15, 0.15, 0.15],
+                    "diffuse": [0.7, 0.7, 0.7],
+                    "specular": [0.35, 0.35, 0.35],
                     "specularLobe": 35
                   }
                 ],
@@ -152,16 +152,16 @@
                 "height": 2,
                 "material": [
                   {
-                    "ambient": 0.05,
-                    "diffuse": 0.9,
-                    "specular": 0.1,
+                    "ambient": [0.05, 0.05, 0.05],
+                    "diffuse": [0.9, 0.9, 0.9],
+                    "specular": [0.1, 0.1, 0.1],
                     "specularLobe": 50,
                     "normal": "textures/normal_map.jpg"
                   },
                   {
-                    "ambient": 0.1,
-                    "diffuse": 0.8,
-                    "specular": 0.2,
+                    "ambient": [0.1, 0.1, 0.1],
+                    "diffuse": [0.8, 0.8, 0.8],
+                    "specular": [0.2, 0.2, 0.2],
                     "specularLobe": 25
                   }
                 ]
@@ -224,11 +224,10 @@
           "isPointInside": true,
           "point": [0, 0, 1],
           "material": {
-            "ambient": 0.3,
-            "diffuse": 0.6,
-            "specular": 0.4,
-            "specularLobe": 20,
-            "normal": 0.8
+            "ambient": [0.3, 0.3, 0.3],
+            "diffuse": [0.6, 0.6, 0.6],
+            "specular": [0.4, 0.4, 0.4],
+            "specularLobe": 20
           }
         }
       }

@@ -40,16 +40,16 @@
       "type": "object",
       "unevaluatedProperties": false,
       "properties": {
-        "ambient": { "type": "number" },
-        "diffuse": { "type": "number" },
-        "specular": { "type": "number" },
+        "ambient": { "$ref": "base-types.schema.json#/$defs/ldr-color" },
+        "diffuse": { "$ref": "base-types.schema.json#/$defs/ldr-color" },
+        "specular": { "$ref": "base-types.schema.json#/$defs/ldr-color" },
         "specularLobe": { "type": "number" },
-        "normal": { "type": "number" }
+        "normal": { "$ref": "base-types.schema.json#/$defs/ldr-color" }
       }
     },
     "map": {
       "oneOf": [
-        { "type": "number", "description": "constant value" },
+        { "$ref": "base-types.schema.json#/$defs/ldr-color" },
         { "type": "string", "description": "path to map" }
       ]
     },
@@ -229,6 +229,11 @@
       "type": "object",
       "unevaluatedProperties": false,
       "properties": {
+        "type": {
+          "type": "string",
+          "description": "type of solid geometry",
+          "enum": ["plane"]
+        },
         "coefficients": {
           "x^4": { "type": "number" },
           "y^4": { "type": "number" },
