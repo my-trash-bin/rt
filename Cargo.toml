@@ -5,6 +5,7 @@ members = [
   "core",
   "json",
   "json_minifier_cli",
+  "jsonc",
   "pack",
   "pack_cli",
   "rt",

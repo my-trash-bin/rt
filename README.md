@@ -7,6 +7,7 @@ This repository contains a collection of Rust crates that together form a simple
 - `core` - ray tracing core containing intersection logic and shading
 - `scene` - scene description and serialization
 - `json` - lightweight JSON parser used by the renderer
+- `jsonc` - bindings to a C JSON-with-comments parser
 - `json_minifier_cli` - CLI tool for minifying JSON files
 - `pack` and `pack_cli` - utilities for building asset packs
 - `types` - common math and color types
