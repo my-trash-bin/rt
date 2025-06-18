@@ -1,6 +1,6 @@
 {
   "files.associations": {
-    "*.rt": "json",
+    "*.rt": "jsonc",
   },
   "json.schemas": [
     {

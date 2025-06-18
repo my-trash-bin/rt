@@ -2,7 +2,7 @@ use core::types::{
     math::{Direction, Position, Vec3},
     rt::{Camera, Ray},
 };
-use json::JsonValue;
+use jsonc::Value;
 
 #[derive(Clone, Debug)]
 pub struct AspectRatio {
@@ -26,9 +26,9 @@ pub struct DeserializablePerspectiveCamera {
 }
 
 impl DeserializablePerspectiveCamera {
-    pub fn from_json(json: &JsonValue) -> Result<DeserializablePerspectiveCamera, String> {
+    pub fn from_json(json: &Value) -> Result<DeserializablePerspectiveCamera, String> {
         let dict = match json {
-            JsonValue::Dict(dict) => dict,
+            Value::Object(dict) => dict,
             _ => return Err("Camera must be a JSON object".to_string()),
         };
 
@@ -57,9 +57,9 @@ impl DeserializablePerspectiveCamera {
         })
     }
 
-    fn parse_fov(json: &JsonValue) -> Result<(f64, FovMode), String> {
+    fn parse_fov(json: &Value) -> Result<(f64, FovMode), String> {
         let dict = match json {
-            JsonValue::Dict(dict) => dict,
+            Value::Object(dict) => dict,
             _ => return Err("fov must be a JSON object".to_string()),
         };
 
@@ -80,59 +80,59 @@ impl DeserializablePerspectiveCamera {
         }
     }
 
-    fn parse_angle(json: &JsonValue) -> Result<f64, String> {
+    fn parse_angle(json: &Value) -> Result<f64, String> {
         let dict = match json {
-            JsonValue::Dict(dict) => dict,
+            Value::Object(dict) => dict,
             _ => return Err("angle must be a JSON object".to_string()),
         };
 
-        if let Some(JsonValue::Number(degree)) = dict.get("degree") {
+        if let Some(Value::Number(degree)) = dict.get("degree") {
             Ok(*degree)
-        } else if let Some(JsonValue::Number(radian)) = dict.get("radian") {
+        } else if let Some(Value::Number(radian)) = dict.get("radian") {
             Ok(radian.to_degrees())
         } else {
             Err("angle must have either 'degree' or 'radian' field".to_string())
         }
     }
 
-    fn parse_position(json: &JsonValue) -> Result<Position, String> {
+    fn parse_position(json: &Value) -> Result<Position, String> {
         let array = match json {
-            JsonValue::List(array) if array.len() == 3 => array,
+            Value::Array(array) if array.len() == 3 => array,
             _ => return Err("position must be an array of 3 numbers".to_string()),
         };
 
         let x = match &array[0] {
-            JsonValue::Number(n) => *n,
+            Value::Number(n) => *n,
             _ => return Err("position[0] must be a number".to_string()),
         };
         let y = match &array[1] {
-            JsonValue::Number(n) => *n,
+            Value::Number(n) => *n,
             _ => return Err("position[1] must be a number".to_string()),
         };
         let z = match &array[2] {
-            JsonValue::Number(n) => *n,
+            Value::Number(n) => *n,
             _ => return Err("position[2] must be a number".to_string()),
         };
 
         Ok(Position::new(Vec3::new(x, y, z)))
     }
 
-    fn parse_direction(json: &JsonValue) -> Result<Direction, String> {
+    fn parse_direction(json: &Value) -> Result<Direction, String> {
         let array = match json {
-            JsonValue::List(array) if array.len() == 3 => array,
+            Value::Array(array) if array.len() == 3 => array,
             _ => return Err("direction must be an array of 3 numbers".to_string()),
         };
 
         let x = match &array[0] {
-            JsonValue::Number(n) => *n,
+            Value::Number(n) => *n,
             _ => return Err("direction[0] must be a number".to_string()),
         };
         let y = match &array[1] {
-            JsonValue::Number(n) => *n,
+            Value::Number(n) => *n,
             _ => return Err("direction[1] must be a number".to_string()),
         };
         let z = match &array[2] {
-            JsonValue::Number(n) => *n,
+            Value::Number(n) => *n,
             _ => return Err("direction[2] must be a number".to_string()),
         };
 

@@ -1,7 +1,7 @@
 use core::types::math::{Direction, Position, Vec3};
 use core::types::rt::Light;
 use directional::DirectionalLight;
-use json::JsonValue;
+use jsonc::Value;
 use point::PointLight;
 use spot::SpotLight;
 use types::HDRColor;
@@ -24,14 +24,14 @@ impl DeserializableLight {
         }
     }
 
-    pub fn from_json(json: &JsonValue) -> Result<DeserializableLight, String> {
+    pub fn from_json(json: &Value) -> Result<DeserializableLight, String> {
         let dict = match json {
-            JsonValue::Dict(dict) => dict,
+            Value::Object(dict) => dict,
             _ => return Err("Light must be a JSON object".to_string()),
         };
 
         let type_str = match dict.get("type") {
-            Some(JsonValue::String(s)) => s,
+            Some(Value::String(s)) => s,
             _ => return Err("Light must have a 'type' field with string value".to_string()),
         };
 
@@ -45,7 +45,7 @@ impl DeserializableLight {
                     .ok_or("Missing required field: position")?;
                 let position = Self::parse_position(position_json)?;
 
-                let range = if let Some(JsonValue::Number(r)) = dict.get("range") {
+                let range = if let Some(Value::Number(r)) = dict.get("range") {
                     if *r <= 0.0 {
                         return Err("range must be greater than 0".to_string());
                     }
@@ -54,7 +54,7 @@ impl DeserializableLight {
                     f64::INFINITY
                 };
 
-                let attenuation = if let Some(JsonValue::Boolean(a)) = dict.get("attenuation") {
+                let attenuation = if let Some(Value::Bool(a)) = dict.get("attenuation") {
                     *a
                 } else {
                     true
@@ -97,7 +97,7 @@ impl DeserializableLight {
                     .ok_or("Missing required field: direction")?;
                 let direction = Self::parse_direction(direction_json)?;
 
-                let range = if let Some(JsonValue::Number(r)) = dict.get("range") {
+                let range = if let Some(Value::Number(r)) = dict.get("range") {
                     if *r <= 0.0 {
                         return Err("range must be greater than 0".to_string());
                     }
@@ -106,7 +106,7 @@ impl DeserializableLight {
                     f64::INFINITY
                 };
 
-                let attenuation = if let Some(JsonValue::Boolean(a)) = dict.get("attenuation") {
+                let attenuation = if let Some(Value::Bool(a)) = dict.get("attenuation") {
                     *a
                 } else {
                     true
@@ -125,11 +125,11 @@ impl DeserializableLight {
         }
     }
 
-    fn parse_hdr_color(json: &JsonValue) -> Result<HDRColor, String> {
+    fn parse_hdr_color(json: &Value) -> Result<HDRColor, String> {
         match json {
-            JsonValue::List(array) if array.len() == 3 => {
+            Value::Array(array) if array.len() == 3 => {
                 let r = match &array[0] {
-                    JsonValue::Number(n) => {
+                    Value::Number(n) => {
                         if *n < 0.0 || !n.is_finite() {
                             return Err("color[0] must be a non-negative finite number".to_string());
                         }
@@ -138,7 +138,7 @@ impl DeserializableLight {
                     _ => return Err("color[0] must be a number".to_string()),
                 };
                 let g = match &array[1] {
-                    JsonValue::Number(n) => {
+                    Value::Number(n) => {
                         if *n < 0.0 || !n.is_finite() {
                             return Err("color[1] must be a non-negative finite number".to_string());
                         }
@@ -147,7 +147,7 @@ impl DeserializableLight {
                     _ => return Err("color[1] must be a number".to_string()),
                 };
                 let b = match &array[2] {
-                    JsonValue::Number(n) => {
+                    Value::Number(n) => {
                         if *n < 0.0 || !n.is_finite() {
                             return Err("color[2] must be a non-negative finite number".to_string());
                         }
@@ -161,19 +161,19 @@ impl DeserializableLight {
         }
     }
 
-    fn parse_position(json: &JsonValue) -> Result<Position, String> {
+    fn parse_position(json: &Value) -> Result<Position, String> {
         match json {
-            JsonValue::List(array) if array.len() == 3 => {
+            Value::Array(array) if array.len() == 3 => {
                 let x = match &array[0] {
-                    JsonValue::Number(n) => *n,
+                    Value::Number(n) => *n,
                     _ => return Err("position[0] must be a number".to_string()),
                 };
                 let y = match &array[1] {
-                    JsonValue::Number(n) => *n,
+                    Value::Number(n) => *n,
                     _ => return Err("position[1] must be a number".to_string()),
                 };
                 let z = match &array[2] {
-                    JsonValue::Number(n) => *n,
+                    Value::Number(n) => *n,
                     _ => return Err("position[2] must be a number".to_string()),
                 };
                 Ok(Position::new(Vec3::new(x, y, z)))
@@ -182,11 +182,11 @@ impl DeserializableLight {
         }
     }
 
-    fn parse_direction(json: &JsonValue) -> Result<Direction, String> {
+    fn parse_direction(json: &Value) -> Result<Direction, String> {
         match json {
-            JsonValue::List(array) if array.len() == 3 => {
+            Value::Array(array) if array.len() == 3 => {
                 let x = match &array[0] {
-                    JsonValue::Number(n) => {
+                    Value::Number(n) => {
                         if !n.is_finite() {
                             return Err("direction[0] must be a finite number".to_string());
                         }
@@ -195,7 +195,7 @@ impl DeserializableLight {
                     _ => return Err("direction[0] must be a number".to_string()),
                 };
                 let y = match &array[1] {
-                    JsonValue::Number(n) => {
+                    Value::Number(n) => {
                         if !n.is_finite() {
                             return Err("direction[1] must be a finite number".to_string());
                         }
@@ -204,7 +204,7 @@ impl DeserializableLight {
                     _ => return Err("direction[1] must be a number".to_string()),
                 };
                 let z = match &array[2] {
-                    JsonValue::Number(n) => {
+                    Value::Number(n) => {
                         if !n.is_finite() {
                             return Err("direction[2] must be a finite number".to_string());
                         }
@@ -224,15 +224,15 @@ impl DeserializableLight {
         }
     }
 
-    fn parse_angle(json: &JsonValue) -> Result<f64, String> {
+    fn parse_angle(json: &Value) -> Result<f64, String> {
         let dict = match json {
-            JsonValue::Dict(dict) => dict,
+            Value::Object(dict) => dict,
             _ => return Err("angle must be a JSON object".to_string()),
         };
 
-        if let Some(JsonValue::Number(degree)) = dict.get("degree") {
+        if let Some(Value::Number(degree)) = dict.get("degree") {
             Ok(*degree)
-        } else if let Some(JsonValue::Number(radian)) = dict.get("radian") {
+        } else if let Some(Value::Number(radian)) = dict.get("radian") {
             Ok(radian.to_degrees())
         } else {
             Err("angle must have either 'degree' or 'radian' field".to_string())
