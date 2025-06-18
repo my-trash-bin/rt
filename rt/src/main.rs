@@ -1,6 +1,7 @@
-use scene::DeserializableScene;
+use scene::{Image, ImageLoader, Scene};
 use std::env;
 use std::error::Error;
+use std::sync::Arc;
 
 use core::types::math::Vec3;
 
@@ -301,7 +302,28 @@ fn main() {
             if let Err(e) = (|| -> Result<(), String> {
                 let json_content = std::fs::read_to_string(&a.input).map_err(|e| e.to_string())?;
                 let json_value = jsonc::parse(&json_content)?;
-                let _scene = DeserializableScene::from_json(json_value)?;
+                struct DummyImage;
+                impl Image for DummyImage {
+                    fn width(&self) -> usize {
+                        1
+                    }
+                    fn height(&self) -> usize {
+                        1
+                    }
+                    fn get(&self, _x: usize, _y: usize) -> [f64; 3] {
+                        [0.0, 0.0, 0.0]
+                    }
+                }
+
+                struct DummyLoader;
+                impl ImageLoader for DummyLoader {
+                    fn load(&self, _path: &str) -> Arc<dyn Image + Send + Sync> {
+                        Arc::new(DummyImage)
+                    }
+                }
+
+                let loader = DummyLoader;
+                let _scene = Scene::from_json_value(json_value, 1.0, &loader)?;
                 Ok(())
             })() {
                 eprintln!("Error: {}", e);

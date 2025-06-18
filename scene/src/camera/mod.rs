@@ -1,24 +1,13 @@
 use core::types::rt::Camera;
 use jsonc::Value;
-use perspective::DeserializablePerspectiveCamera;
+use perspective as persp;
 
 pub mod perspective;
 
-#[derive(Debug)]
-pub enum DeserializableCamera {
-    Perspective(DeserializablePerspectiveCamera),
-}
-
-impl DeserializableCamera {
-    pub fn into_camera(self, screen_aspect_ratio: f64) -> Box<dyn Camera + Send + Sync> {
-        match self {
-            DeserializableCamera::Perspective(c) => c.into_camera(screen_aspect_ratio),
-        }
-    }
-
-    pub fn from_json(json: &Value) -> Result<DeserializableCamera, String> {
-        return Ok(DeserializableCamera::Perspective(
-            DeserializablePerspectiveCamera::from_json(json)?,
-        ));
-    }
+/// Parse a camera directly from a JSON value.
+pub fn from_json_value(
+    json: &Value,
+    screen_aspect_ratio: f64,
+) -> Result<Box<dyn Camera + Send + Sync>, String> {
+    persp::from_json_value(json, screen_aspect_ratio)
 }
