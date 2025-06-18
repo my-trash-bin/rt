@@ -1,5 +1,5 @@
 use core::types::rt::Camera;
-use json::JsonValue;
+use jsonc::Value;
 use perspective::DeserializablePerspectiveCamera;
 
 pub mod perspective;
@@ -16,7 +16,7 @@ impl DeserializableCamera {
         }
     }
 
-    pub fn from_json(json: &JsonValue) -> Result<DeserializableCamera, String> {
+    pub fn from_json(json: &Value) -> Result<DeserializableCamera, String> {
         return Ok(DeserializableCamera::Perspective(
             DeserializablePerspectiveCamera::from_json(json)?,
         ));

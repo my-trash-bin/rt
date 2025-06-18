@@ -1,14 +1,8 @@
-use json::JsonValue;
 use scene::DeserializableScene;
 use std::env;
 use std::error::Error;
 
-#[derive(Debug)]
-struct Vec3 {
-    x: f64,
-    y: f64,
-    z: f64,
-}
+use core::types::math::Vec3;
 
 #[derive(Debug)]
 struct Args {
@@ -306,7 +300,7 @@ fn main() {
         Ok(ArgsResult::Ok(a)) => {
             if let Err(e) = (|| -> Result<(), String> {
                 let json_content = std::fs::read_to_string(&a.input).map_err(|e| e.to_string())?;
-                let json_value = JsonValue::new(&json_content)?;
+                let json_value = jsonc::parse(&json_content)?;
                 let _scene = DeserializableScene::from_json(json_value)?;
                 Ok(())
             })() {

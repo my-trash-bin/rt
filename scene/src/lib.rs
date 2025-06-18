@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::Arc};
 
 use camera::DeserializableCamera;
 use core::types::rt::Scene;
-use json::JsonValue;
+use jsonc::Value;
 use light::DeserializableLight;
 use object::DeserializableRTObject;
 use types::HDRColor;
@@ -50,9 +50,9 @@ impl DeserializableScene {
         }
     }
 
-    pub fn from_json(json: JsonValue) -> Result<DeserializableScene, String> {
+    pub fn from_json(json: Value) -> Result<DeserializableScene, String> {
         let dict = match json {
-            JsonValue::Dict(dict) => dict,
+            Value::Object(dict) => dict,
             _ => return Err("Scene must be a JSON object".to_string()),
         };
 
@@ -63,17 +63,17 @@ impl DeserializableScene {
             .get("voidColor")
             .ok_or("Missing required field: voidColor")?;
         let sky_color = match sky_color_json_value {
-            JsonValue::List(array) if array.len() == 3 => {
+            Value::Array(array) if array.len() == 3 => {
                 let r = match &array[0] {
-                    JsonValue::Number(n) => *n,
+                    Value::Number(n) => *n,
                     _ => return Err("voidColor[0] must be a number".to_string()),
                 };
                 let g = match &array[1] {
-                    JsonValue::Number(n) => *n,
+                    Value::Number(n) => *n,
                     _ => return Err("voidColor[1] must be a number".to_string()),
                 };
                 let b = match &array[2] {
-                    JsonValue::Number(n) => *n,
+                    Value::Number(n) => *n,
                     _ => return Err("voidColor[2] must be a number".to_string()),
                 };
                 HDRColor { r, g, b }
@@ -85,17 +85,17 @@ impl DeserializableScene {
             .get("ambientLight")
             .ok_or("Missing required field: ambientLight")?;
         let ambient_light = match ambient_light_json_value {
-            JsonValue::List(array) if array.len() == 3 => {
+            Value::Array(array) if array.len() == 3 => {
                 let r = match &array[0] {
-                    JsonValue::Number(n) => *n,
+                    Value::Number(n) => *n,
                     _ => return Err("ambientLight[0] must be a number".to_string()),
                 };
                 let g = match &array[1] {
-                    JsonValue::Number(n) => *n,
+                    Value::Number(n) => *n,
                     _ => return Err("ambientLight[1] must be a number".to_string()),
                 };
                 let b = match &array[2] {
-                    JsonValue::Number(n) => *n,
+                    Value::Number(n) => *n,
                     _ => return Err("ambientLight[2] must be a number".to_string()),
                 };
                 HDRColor { r, g, b }
@@ -108,10 +108,10 @@ impl DeserializableScene {
 
         if let Some(objects_json) = dict.get("objects") {
             match objects_json {
-                JsonValue::List(array) => {
+                Value::Array(array) => {
                     for item in array {
-                        if let JsonValue::Dict(item_dict) = item {
-                            if let Some(JsonValue::String(type_str)) = item_dict.get("type") {
+                        if let Value::Object(item_dict) = item {
+                            if let Some(Value::String(type_str)) = item_dict.get("type") {
                                 match type_str.as_str() {
                                     "point" | "directional" | "spot" => {
                                         // Light 객체

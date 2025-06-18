@@ -3,8 +3,8 @@ resolver = "2"
 members = [
   "bmp",
   "core",
-  "json",
   "json_minifier_cli",
+  "jsonc",
   "pack",
   "pack_cli",
   "rt",
