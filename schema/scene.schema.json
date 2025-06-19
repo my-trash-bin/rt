@@ -195,7 +195,11 @@
         "height": {
           "type": "integer"
         }
-      }
+      },
+      "required": [
+        "width",
+        "height"
+      ]
     }
   }
 }
