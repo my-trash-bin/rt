@@ -1,10 +1,8 @@
 use std::{collections::HashMap, sync::Arc};
 
-use camera::DeserializableCamera;
-use core::types::rt::Scene;
+use core::types::rt::Scene as CoreScene;
 use jsonc::Value;
-use light::DeserializableLight;
-use object::DeserializableRTObject;
+use object::DeserializableRTObject; // objects still use builder
 use types::HDRColor;
 
 pub mod camera;
@@ -12,57 +10,38 @@ pub mod light;
 pub mod object;
 pub mod texture;
 
-pub trait Image {
-    fn width(&self) -> usize;
-    fn height(&self) -> usize;
-    fn get(&self, x: usize, y: usize) -> [f64; 3];
-}
+pub struct Scene(pub CoreScene);
 
-pub trait ImageLoader {
-    fn load(&self, path: &str) -> Arc<dyn Image + Send + Sync>;
-}
-
-pub struct DeserializableScene {
-    pub camera: DeserializableCamera,
-    pub objects: Vec<DeserializableRTObject>,
-    pub lights: Vec<DeserializableLight>,
-    pub sky_color: HDRColor,
-    pub ambient_light: HDRColor,
-}
-
-impl DeserializableScene {
-    pub fn into_scene<T: ImageLoader>(self, screen_aspect_ratio: f64, image_loader: &T) -> Scene {
-        let mut cache = ImageCache::new(image_loader);
-        Scene {
-            camera: self.camera.into_camera(screen_aspect_ratio),
-            objects: self
-                .objects
-                .into_iter()
-                .map(|o| o.into_rt_object(&mut cache))
-                .collect(),
-            lights: self
-                .lights
-                .into_iter()
-                .map(DeserializableLight::into_light)
-                .collect(),
-            sky_color: Arc::new(move |_| self.sky_color),
-            ambient_light: self.ambient_light,
-        }
+impl From<CoreScene> for Scene {
+    fn from(scene: CoreScene) -> Self {
+        Scene(scene)
     }
+}
 
-    pub fn from_json(json: Value) -> Result<DeserializableScene, String> {
+impl From<Scene> for CoreScene {
+    fn from(scene: Scene) -> Self {
+        scene.0
+    }
+}
+
+impl Scene {
+    pub fn from_json_value<T: ImageLoader>(
+        json: Value,
+        screen_aspect_ratio: f64,
+        image_loader: &T,
+    ) -> Result<Self, String> {
         let dict = match json {
             Value::Object(dict) => dict,
             _ => return Err("Scene must be a JSON object".to_string()),
         };
 
-        let camera_json_value = dict.get("camera").ok_or("Missing required field: camera")?;
-        let camera = DeserializableCamera::from_json(camera_json_value)?;
+        let camera_json = dict.get("camera").ok_or("Missing required field: camera")?;
+        let camera = camera::from_json_value(camera_json, screen_aspect_ratio)?;
 
-        let sky_color_json_value = dict
+        let sky_color_json = dict
             .get("voidColor")
             .ok_or("Missing required field: voidColor")?;
-        let sky_color = match sky_color_json_value {
+        let sky_color = match sky_color_json {
             Value::Array(array) if array.len() == 3 => {
                 let r = match &array[0] {
                     Value::Number(n) => *n,
@@ -81,10 +60,10 @@ impl DeserializableScene {
             _ => return Err("voidColor must be an array of 3 numbers".to_string()),
         };
 
-        let ambient_light_json_value = dict
+        let ambient_light_json = dict
             .get("ambientLight")
             .ok_or("Missing required field: ambientLight")?;
-        let ambient_light = match ambient_light_json_value {
+        let ambient_light = match ambient_light_json {
             Value::Array(array) if array.len() == 3 => {
                 let r = match &array[0] {
                     Value::Number(n) => *n,
@@ -103,8 +82,8 @@ impl DeserializableScene {
             _ => return Err("ambientLight must be an array of 3 numbers".to_string()),
         };
 
-        let mut objects = Vec::new();
-        let mut lights = Vec::new();
+        let mut objects: Vec<DeserializableRTObject> = Vec::new();
+        let mut lights: Vec<Box<dyn core::types::rt::Light + Send + Sync>> = Vec::new();
 
         if let Some(objects_json) = dict.get("objects") {
             match objects_json {
@@ -114,18 +93,14 @@ impl DeserializableScene {
                             if let Some(Value::String(type_str)) = item_dict.get("type") {
                                 match type_str.as_str() {
                                     "point" | "directional" | "spot" => {
-                                        // Light 객체
-                                        let light = DeserializableLight::from_json(item)?;
+                                        let light = light::from_json_value(item)?;
                                         lights.push(light);
                                     }
                                     "csg" => {
-                                        // CSG 객체
                                         //let object = DeserializableRTObject::from_json(item)?;
                                         //objects.push(object);
                                     }
-                                    _ => {
-                                        return Err(format!("Unknown object type: {}", type_str));
-                                    }
+                                    _ => return Err(format!("Unknown object type: {}", type_str)),
                                 }
                             } else {
                                 return Err("Object must have a 'type' field".to_string());
@@ -139,27 +114,29 @@ impl DeserializableScene {
             }
         }
 
-        println!("-----DeserializableScene Start-----");
-        println!("camera: {:?}", camera);
-        println!("sky_color: {:?}", sky_color);
-        println!("ambient_light: {:?}", ambient_light);
+        let mut cache = ImageCache::new(image_loader);
 
-        println!(
-            "Parsed {} objects and {} lights",
-            objects.len(),
-            lights.len()
-        );
-        // TODO: CSG 객체
-        println!("-----DeserializableScene End-----");
-
-        Ok(DeserializableScene {
+        Ok(Scene(CoreScene {
             camera,
-            objects,
+            objects: objects
+                .into_iter()
+                .map(|o| o.into_rt_object(&mut cache))
+                .collect(),
             lights,
-            sky_color,
+            sky_color: Arc::new(move |_| sky_color),
             ambient_light,
-        })
+        }))
     }
+}
+
+pub trait Image {
+    fn width(&self) -> usize;
+    fn height(&self) -> usize;
+    fn get(&self, x: usize, y: usize) -> [f64; 3];
+}
+
+pub trait ImageLoader {
+    fn load(&self, path: &str) -> Arc<dyn Image + Send + Sync>;
 }
 
 pub struct ImageCache<'a, T: ImageLoader> {

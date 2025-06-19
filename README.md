@@ -28,6 +28,15 @@ The `rt` crate provides a CLI to render a scene file. A sample scene is included
 cargo run --package rt -- input.scene.rt
 ```
 
+Scenes can also be loaded programmatically with `scene::Scene::from_json_value`:
+
+```rust
+let json = std::fs::read_to_string("input.scene.rt").unwrap();
+let value = jsonc::parse(&json).unwrap();
+let dummy_loader = MyLoader; // implements `scene::ImageLoader`
+let scene = scene::Scene::from_json_value(value, 1.0, &dummy_loader).unwrap();
+```
+
 Use `--help` to see additional command line options such as output image dimensions and camera parameters.
 
 ## Formatting and tests
