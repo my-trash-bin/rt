@@ -1,61 +1,11 @@
-use super::{DeserializableRTObject, RTObject};
+use jsonc::Value;
+
 use crate::{ImageCache, ImageLoader};
 
+use super::RTObject;
+
 use core::types::rt::{Hit, Ray};
-
-#[derive(Clone, Debug)]
-pub struct DeserializableUnion {
-    a: Box<DeserializableRTObject>,
-    b: Box<DeserializableRTObject>,
-}
-
-impl DeserializableUnion {
-    pub fn into_rt_object<T: ImageLoader>(
-        self,
-        image_cache: &mut ImageCache<T>,
-    ) -> Box<dyn RTObject + Send + Sync> {
-        Box::new(Union {
-            a: self.a.into_rt_object(image_cache),
-            b: self.b.into_rt_object(image_cache),
-        })
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct DeserializableIntersection {
-    a: Box<DeserializableRTObject>,
-    b: Box<DeserializableRTObject>,
-}
-
-impl DeserializableIntersection {
-    pub fn into_rt_object<T: ImageLoader>(
-        self,
-        image_cache: &mut ImageCache<T>,
-    ) -> Box<dyn RTObject + Send + Sync> {
-        Box::new(Intersection {
-            a: self.a.into_rt_object(image_cache),
-            b: self.b.into_rt_object(image_cache),
-        })
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct DeserializableDifference {
-    a: Box<DeserializableRTObject>,
-    b: Box<DeserializableRTObject>,
-}
-
-impl DeserializableDifference {
-    pub fn into_rt_object<T: ImageLoader>(
-        self,
-        image_cache: &mut ImageCache<T>,
-    ) -> Box<dyn RTObject + Send + Sync> {
-        Box::new(Difference {
-            a: self.a.into_rt_object(image_cache),
-            b: self.b.into_rt_object(image_cache),
-        })
-    }
-}
+use std::collections::HashMap;
 
 fn remove_duplicate_hits(sorted: &mut Vec<Hit>) {
     let mut result: Vec<Hit> = Vec::new();
@@ -213,5 +163,27 @@ impl RTObject for Difference {
         remove_duplicate_hits(&mut result);
 
         result
+    }
+}
+
+pub fn from_json_value(
+    dict: &HashMap<String, Value>,
+    type_str: &String,
+    image_cache: &ImageCache<impl ImageLoader>,
+) -> Result<Box<dyn RTObject + Send + Sync>, String> {
+    let a = crate::object::from_json_value(
+        dict.get("a").ok_or("Missing required field: a")?,
+        image_cache,
+    )?;
+    let b = crate::object::from_json_value(
+        dict.get("b").ok_or("Missing required field: b")?,
+        image_cache,
+    )?;
+
+    match type_str.as_str() {
+        "union" => Ok(Box::new(Union { a, b })),
+        "intersection" => Ok(Box::new(Intersection { a, b })),
+        "difference" => Ok(Box::new(Difference { a, b })),
+        _ => Err(format!("Unknown csg type: {}", type_str)),
     }
 }

@@ -1,9 +1,16 @@
+use crate::{
+    object::material_from_json_value, position_from_json_value, scale_from_json_value, ImageCache,
+    ImageLoader,
+};
+
 use super::RTObject;
 
 use core::types::{
     math::{Direction, Position, Vec3},
     rt::{Hit, Ray},
 };
+use jsonc::Value;
+use std::collections::HashMap;
 use types::LDRColor;
 
 #[derive(Clone, Debug)]
@@ -119,4 +126,27 @@ impl RTObject for Cube {
 
         result
     }
+}
+
+pub fn from_json_value(
+    dict: &HashMap<String, Value>,
+    image_cache: &ImageCache<impl ImageLoader>,
+) -> Result<Box<dyn RTObject + Send + Sync>, String> {
+    let scale = dict
+        .get("size")
+        .map(scale_from_json_value)
+        .unwrap_or(Ok(Vec3::new(1.0, 1.0, 1.0)))?;
+    let position = dict
+        .get("position")
+        .map(position_from_json_value)
+        .unwrap_or(Ok(Position::new(Vec3::ZERO)))?;
+    let (albedo, roughness, metallic) =
+        material_from_json_value(dict.get("material"), image_cache)?;
+    Ok(Box::new(Cube {
+        position,
+        scale,
+        albedo,
+        roughness,
+        metallic,
+    }))
 }

@@ -10,13 +10,17 @@ pub struct MinirtBmpPixel {
 
 #[derive(Debug, PartialEq)]
 pub struct MinirtBmp {
-    width: usize,
-    height: usize,
-    extra: Vec<MinirtBmpPixel>,
+    pub width: usize,
+    pub height: usize,
+    pub extra: Vec<MinirtBmpPixel>,
 }
 
 impl MinirtBmp {
-    pub fn new(width: usize, height: usize, fill: fn(usize, usize) -> MinirtBmpPixel) -> MinirtBmp {
+    pub fn new(
+        width: usize,
+        height: usize,
+        fill: impl Fn(usize, usize) -> MinirtBmpPixel,
+    ) -> MinirtBmp {
         let mut extra = Vec::with_capacity(width * height);
         for y in 0..height {
             for x in 0..width {
@@ -30,7 +34,7 @@ impl MinirtBmp {
         }
     }
 
-    pub fn serialize(&self) -> Result<Vec<u8>, Box<dyn Error>> {
+    pub fn serialize(&self) -> Vec<u8> {
         let row_padding = (4 - (self.width * 3) % 4) % 4;
         let row_size = self.width * 3 + row_padding;
         let whole_size = row_size * self.height;
@@ -66,7 +70,7 @@ impl MinirtBmp {
             }
         }
 
-        Ok(result)
+        result
     }
 
     pub fn deserialize(buffer: &[u8]) -> Result<MinirtBmp, Box<dyn Error>> {

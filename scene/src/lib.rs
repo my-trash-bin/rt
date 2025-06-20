@@ -1,9 +1,11 @@
 use std::{collections::HashMap, sync::Arc};
 
-use core::types::rt::Scene as CoreScene;
+use core::types::{
+    math::{Direction, Position, Vec3},
+    rt::{RTObject, Scene as CoreScene},
+};
 use jsonc::Value;
-use object::DeserializableRTObject; // objects still use builder
-use types::HDRColor;
+use types::{HDRColor, LDRColor};
 
 pub mod camera;
 pub mod light;
@@ -27,8 +29,7 @@ impl From<Scene> for CoreScene {
 impl Scene {
     pub fn from_json_value<T: ImageLoader>(
         json: Value,
-        screen_aspect_ratio: f64,
-        image_loader: &T,
+        image_cache: &mut ImageCache<T>,
     ) -> Result<Self, String> {
         let dict = match json {
             Value::Object(dict) => dict,
@@ -60,6 +61,7 @@ impl Scene {
             _ => return Err("imageSize must be a JSON object".to_string()),
         };
 
+        let screen_aspect_ratio = image_width as f64 / image_height as f64;
         let camera_json = dict.get("camera").ok_or("Missing required field: camera")?;
         let camera = camera::from_json_value(camera_json, screen_aspect_ratio)?;
 
@@ -107,7 +109,7 @@ impl Scene {
             _ => return Err("ambientLight must be an array of 3 numbers".to_string()),
         };
 
-        let mut objects: Vec<DeserializableRTObject> = Vec::new();
+        let mut objects: Vec<Box<dyn RTObject + Send + Sync>> = Vec::new();
         let mut lights: Vec<Box<dyn core::types::rt::Light + Send + Sync>> = Vec::new();
 
         if let Some(objects_json) = dict.get("objects") {
@@ -122,8 +124,11 @@ impl Scene {
                                         lights.push(light);
                                     }
                                     "csg" => {
-                                        //let object = DeserializableRTObject::from_json(item)?;
-                                        //objects.push(object);
+                                        let model = item_dict
+                                            .get("model")
+                                            .ok_or("Missing required field: model")?;
+                                        let object = object::from_json_value(model, image_cache)?;
+                                        objects.push(object);
                                     }
                                     _ => return Err(format!("Unknown object type: {}", type_str)),
                                 }
@@ -139,16 +144,11 @@ impl Scene {
             }
         }
 
-        let mut cache = ImageCache::new(image_loader);
-
         Ok(Scene(CoreScene {
             image_width,
             image_height,
             camera,
-            objects: objects
-                .into_iter()
-                .map(|o| o.into_rt_object(&mut cache))
-                .collect(),
+            objects,
             lights,
             sky_color: Arc::new(move |_| sky_color),
             ambient_light,
@@ -189,4 +189,132 @@ impl<'a, T: ImageLoader> ImageCache<'a, T> {
 
         loaded_image
     }
+}
+
+pub fn ldr_color_from_json_value(json: &Value) -> Result<LDRColor, String> {
+    let Value::Array(array) = json else {
+        return Err("Color must be an array of 3 numbers".to_string());
+    };
+    if array.len() != 3 {
+        return Err("Color must be an array of 3 numbers".to_string());
+    }
+    let r = match &array[0] {
+        Value::Number(n) => *n,
+        _ => return Err("Color must be an array of 3 numbers".to_string()),
+    };
+    let g = match &array[1] {
+        Value::Number(n) => *n,
+        _ => return Err("Color must be an array of 3 numbers".to_string()),
+    };
+    let b = match &array[2] {
+        Value::Number(n) => *n,
+        _ => return Err("Color must be an array of 3 numbers".to_string()),
+    };
+    if r < 0.0 || r > 1.0 || g < 0.0 || g > 1.0 || b < 0.0 || b > 1.0 {
+        return Err("Color must be an array of 3 numbers between 0 and 1".to_string());
+    }
+    Ok(LDRColor { r, g, b })
+}
+
+pub fn hdr_color_from_json_value(json: &Value) -> Result<HDRColor, String> {
+    let Value::Array(array) = json else {
+        return Err("Color must be an array of 3 numbers".to_string());
+    };
+    if array.len() != 3 {
+        return Err("Color must be an array of 3 numbers".to_string());
+    }
+    let r = match &array[0] {
+        Value::Number(n) => *n,
+        _ => return Err("Color must be an array of 3 numbers".to_string()),
+    };
+    let g = match &array[1] {
+        Value::Number(n) => *n,
+        _ => return Err("Color must be an array of 3 numbers".to_string()),
+    };
+    let b = match &array[2] {
+        Value::Number(n) => *n,
+        _ => return Err("Color must be an array of 3 numbers".to_string()),
+    };
+    if r < 0.0 || g < 0.0 || b < 0.0 {
+        return Err("Color must be an array of 3 numbers greater than 0".to_string());
+    }
+    Ok(HDRColor { r, g, b })
+}
+
+fn position_from_json_value(json: &Value) -> Result<Position, String> {
+    let Value::Array(array) = json else {
+        return Err("Position must be an array of 3 numbers".to_string());
+    };
+    if array.len() != 3 {
+        return Err("Position must be an array of 3 numbers".to_string());
+    }
+    let Value::Number(x) = &array[0] else {
+        return Err("Position must be an array of 3 numbers".to_string());
+    };
+    let Value::Number(y) = &array[1] else {
+        return Err("Position must be an array of 3 numbers".to_string());
+    };
+    let Value::Number(z) = &array[2] else {
+        return Err("Position must be an array of 3 numbers".to_string());
+    };
+    Ok(Position::new(Vec3::new(*x, *y, *z)))
+}
+
+fn direction_from_json_value(json: &Value) -> Result<Direction, String> {
+    let Value::Array(array) = json else {
+        return Err("Direction must be an array of 3 numbers".to_string());
+    };
+    if array.len() != 3 {
+        return Err("Position must be an array of 3 numbers".to_string());
+    }
+    let Value::Number(x) = &array[0] else {
+        return Err("Position must be an array of 3 numbers".to_string());
+    };
+    let Value::Number(y) = &array[1] else {
+        return Err("Position must be an array of 3 numbers".to_string());
+    };
+    let Value::Number(z) = &array[2] else {
+        return Err("Position must be an array of 3 numbers".to_string());
+    };
+    let vec = Vec3::new(*x, *y, *z);
+    if vec.length() < 1e-10 {
+        return Err("direction vector cannot be zero or near-zero".to_string());
+    }
+
+    Ok(Direction::new(vec))
+}
+
+fn angle_from_json_value(json: &Value) -> Result<f64, String> {
+    let Value::Object(dict) = json else {
+        return Err("angle must be a JSON object".to_string());
+    };
+
+    if let Some(Value::Number(degree)) = dict.get("degree") {
+        Ok(degree.to_radians())
+    } else if let Some(Value::Number(radian)) = dict.get("radian") {
+        Ok(*radian)
+    } else if let Some(Value::Number(rotation)) = dict.get("rotation") {
+        Ok((rotation * 360.0).to_radians())
+    } else {
+        Err("angle must have either 'degree' or 'radian' or 'rotation' field".to_string())
+    }
+}
+
+fn scale_from_json_value(json: &Value) -> Result<Vec3, String> {
+    let Value::Array(array) = json else {
+        return Err("Position must be an array of 3 numbers".to_string());
+    };
+    if array.len() != 3 {
+        return Err("Position must be an array of 3 numbers".to_string());
+    }
+    let Value::Number(x) = &array[0] else {
+        return Err("Position must be an array of 3 numbers".to_string());
+    };
+    let Value::Number(y) = &array[1] else {
+        return Err("Position must be an array of 3 numbers".to_string());
+    };
+    let Value::Number(z) = &array[2] else {
+        return Err("Position must be an array of 3 numbers".to_string());
+    };
+    Ok(Vec3::new(*x, *y, *z))
 }

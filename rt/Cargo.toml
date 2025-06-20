@@ -6,6 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+bmp = { version = "0.1.0", path = "../bmp" }
 core = { path = "../core" }
 jsonc = { path = "../jsonc" }
 scene = { path = "../scene" }
+types = { version = "0.1.0", path = "../types" }

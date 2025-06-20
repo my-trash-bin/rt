@@ -8,48 +8,49 @@ use super::{util::enhance_normal, RTObject};
 
 #[derive(Clone, Debug)]
 pub struct Quartic {
-    position: Position,
-    albedo: LDRColor,
-    roughness: f64,
-    metallic: f64,
+    pub position: Position,
+    pub albedo: LDRColor,
+    pub roughness: f64,
+    pub metallic: f64,
 
-    c400: f64,
-    c040: f64,
-    c004: f64,
-    c310: f64,
-    c301: f64,
-    c130: f64,
-    c031: f64,
-    c103: f64,
-    c013: f64,
-    c211: f64,
-    c121: f64,
-    c112: f64,
-    c220: f64,
-    c022: f64,
-    c202: f64,
-    c300: f64,
-    c030: f64,
-    c003: f64,
-    c210: f64,
-    c201: f64,
-    c120: f64,
-    c021: f64,
-    c102: f64,
-    c012: f64,
-    c111: f64,
-    c200: f64,
-    c020: f64,
-    c002: f64,
-    c110: f64,
-    c011: f64,
-    c101: f64,
-    c100: f64,
-    c010: f64,
-    c001: f64,
-    c000: f64,
+    pub c400: f64,
+    pub c040: f64,
+    pub c004: f64,
+    pub c310: f64,
+    pub c301: f64,
+    pub c130: f64,
+    pub c031: f64,
+    pub c103: f64,
+    pub c013: f64,
+    pub c211: f64,
+    pub c121: f64,
+    pub c112: f64,
+    pub c220: f64,
+    pub c022: f64,
+    pub c202: f64,
+    pub c300: f64,
+    pub c030: f64,
+    pub c003: f64,
+    pub c210: f64,
+    pub c201: f64,
+    pub c120: f64,
+    pub c021: f64,
+    pub c102: f64,
+    pub c012: f64,
+    pub c111: f64,
+    pub c200: f64,
+    pub c020: f64,
+    pub c002: f64,
+    pub c110: f64,
+    pub c011: f64,
+    pub c101: f64,
+    pub c100: f64,
+    pub c010: f64,
+    pub c001: f64,
+    pub c000: f64,
 
-    inside: Position,
+    pub point: Position,
+    pub is_point_inside: bool,
 }
 
 fn linear_roots(a: f64, b: f64) -> Vec<f64> {
@@ -524,17 +525,18 @@ impl Quartic {
 
 impl RTObject for Quartic {
     fn test(&self, ray: Ray) -> Vec<Hit> {
-        let (inside_direction, inside_length) = (ray.origin - self.inside).direction_and_length();
+        let (inside_direction, inside_length) = (ray.origin - self.point).direction_and_length();
         let internal = self.internal_test(Ray {
-            origin: self.inside,
+            origin: self.point,
             direction: inside_direction,
         });
-        let inside = internal
+        let inside = (internal
             .into_iter()
             .filter(|hit| hit.distance < inside_length)
             .count()
             % 2
-            == 0;
+            == 0)
+            == self.is_point_inside;
 
         let mut result = Vec::new();
 
