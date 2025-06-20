@@ -9,3 +9,5 @@ edition = "2021"
 core = { path = "../core" }
 jsonc = { path = "../jsonc" }
 scene = { path = "../scene" }
+bmp = { path = "../bmp" }
+types = { path = "../types" }

@@ -3,6 +3,7 @@ use std::env;
 use std::error::Error;
 use std::sync::Arc;
 
+use bmp::{MinirtBmp, MinirtBmpPixel};
 use core::types::math::Vec3;
 
 #[derive(Debug)]
@@ -295,6 +296,27 @@ fn args() -> Result<ArgsResult, Box<dyn Error>> {
     Ok(ArgsResult::Ok(result))
 }
 
+struct Renderer<'a>(&'a Scene);
+
+impl<'a> Renderer<'a> {
+    fn render(&self, x: usize, y: usize) -> MinirtBmpPixel {
+        let scene = &self.0 .0;
+        let width = scene.image_width;
+        let height = scene.image_height;
+
+        let u = (x as f64 + 0.5) / width as f64;
+        let v = (y as f64 + 0.5) / height as f64;
+
+        let hdr_color = core::sample(scene, u, v);
+
+        MinirtBmpPixel {
+            r: (hdr_color.r.min(1.0) * 255.0) as u8,
+            g: (hdr_color.g.min(1.0) * 255.0) as u8,
+            b: (hdr_color.b.min(1.0) * 255.0) as u8,
+        }
+    }
+}
+
 fn main() {
     println!("Program entry point");
     match args() {
@@ -302,6 +324,7 @@ fn main() {
             if let Err(e) = (|| -> Result<(), String> {
                 let json_content = std::fs::read_to_string(&a.input).map_err(|e| e.to_string())?;
                 let json_value = jsonc::parse(&json_content)?;
+
                 struct DummyImage;
                 impl Image for DummyImage {
                     fn width(&self) -> usize {
@@ -323,7 +346,36 @@ fn main() {
                 }
 
                 let loader = DummyLoader;
-                let _scene = Scene::from_json_value(json_value, 1.0, &loader)?;
+                let scene = Scene::from_json_value(json_value, 1.0, &loader)?;
+
+                let r = Renderer(&scene);
+                let b = MinirtBmp::new(scene.0.image_width, scene.0.image_height, |x, y| {
+                    r.render(x, y)
+                });
+
+                let bmp_data = b.serialize().map_err(|e| e.to_string())?;
+
+                if a.stdout {
+                    use std::io::Write;
+                    std::io::stdout()
+                        .write_all(&bmp_data)
+                        .map_err(|e| e.to_string())?;
+                } else {
+                    let output_path = a.output.unwrap_or_else(|| {
+                        let mut path = a.input.clone();
+                        if path.ends_with(".rt") {
+                            path.truncate(path.len() - 3);
+                            path.push_str(".bmp");
+                        } else if !a.no_output_bmp_suffix {
+                            path.push_str(".bmp");
+                        }
+
+                        path
+                    });
+                    std::fs::write(&output_path, &bmp_data).map_err(|e| e.to_string())?;
+                    println!("Rendered to: {}", output_path);
+                }
+
                 Ok(())
             })() {
                 eprintln!("Error: {}", e);
