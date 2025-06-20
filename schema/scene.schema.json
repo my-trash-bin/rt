@@ -8,102 +8,198 @@
       "type": "object",
       "unevaluatedProperties": false,
       "properties": {
-        "voidColor": { "$ref": "base-types.schema.json#/$defs/ldr-color" },
-        "ambientLight": { "$ref": "base-types.schema.json#/$defs/hdr-color" },
-        "hdr": { "oneOf": [{ "$ref": "#/$defs/hdr" }, { "type": "null" }] },
-        "camera": { "$ref": "#/$defs/camera" },
+        "imageSize": {
+          "$ref": "#/$defs/imageSize"
+        },
+        "voidColor": {
+          "$ref": "base-types.schema.json#/$defs/ldr-color"
+        },
+        "ambientLight": {
+          "$ref": "base-types.schema.json#/$defs/hdr-color"
+        },
+        "hdr": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/hdr"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "camera": {
+          "$ref": "#/$defs/camera"
+        },
         "objects": {
           "type": "array",
-          "items": { "$ref": "object.schema.json#/$defs/root" }
+          "items": {
+            "$ref": "object.schema.json#/$defs/root"
+          }
         },
         "defs": {
           "type": "object",
-          "additionalProperties": { "$ref": "object.schema.json#/$defs/root" }
+          "additionalProperties": {
+            "$ref": "object.schema.json#/$defs/root"
+          }
         }
       },
-      "required": ["camera"]
+      "required": [
+        "camera"
+      ]
     },
     "camera": {
       "oneOf": [
-        { "$ref": "#/$defs/camera-direction" },
-        { "$ref": "#/$defs/camera-look-at" }
+        {
+          "$ref": "#/$defs/camera-direction"
+        },
+        {
+          "$ref": "#/$defs/camera-look-at"
+        }
       ]
     },
     "camera-direction": {
       "type": "object",
       "unevaluatedProperties": false,
       "properties": {
-        "fov": { "$ref": "#/$defs/camera-fov" },
-        "position": { "$ref": "base-types.schema.json#/$defs/position" },
-        "direction": { "$ref": "base-types.schema.json#/$defs/direction" }
+        "fov": {
+          "$ref": "#/$defs/camera-fov"
+        },
+        "position": {
+          "$ref": "base-types.schema.json#/$defs/position"
+        },
+        "direction": {
+          "$ref": "base-types.schema.json#/$defs/direction"
+        }
       },
-      "required": ["fov", "position", "direction"]
+      "required": [
+        "fov",
+        "position",
+        "direction"
+      ]
     },
     "camera-look-at": {
       "type": "object",
       "unevaluatedProperties": false,
       "properties": {
-        "fov": { "$ref": "#/$defs/camera-fov" },
-        "position": { "$ref": "base-types.schema.json#/$defs/position" },
-        "lookAt": { "$ref": "base-types.schema.json#/$defs/position" }
+        "fov": {
+          "$ref": "#/$defs/camera-fov"
+        },
+        "position": {
+          "$ref": "base-types.schema.json#/$defs/position"
+        },
+        "lookAt": {
+          "$ref": "base-types.schema.json#/$defs/position"
+        }
       },
-      "required": ["fov", "position", "lookAt"]
+      "required": [
+        "fov",
+        "position",
+        "lookAt"
+      ]
     },
     "camera-fov": {
       "oneOf": [
-        { "$ref": "#/$defs/camera-fov-x" },
-        { "$ref": "#/$defs/camera-fov-y" },
-        { "$ref": "#/$defs/camera-fov-min" },
-        { "$ref": "#/$defs/camera-fov-max" }
+        {
+          "$ref": "#/$defs/camera-fov-x"
+        },
+        {
+          "$ref": "#/$defs/camera-fov-y"
+        },
+        {
+          "$ref": "#/$defs/camera-fov-min"
+        },
+        {
+          "$ref": "#/$defs/camera-fov-max"
+        }
       ]
     },
     "camera-fov-x": {
       "type": "object",
       "unevaluatedProperties": false,
       "properties": {
-        "x": { "$ref": "base-types.schema.json#/$defs/angle-convex" }
+        "x": {
+          "$ref": "base-types.schema.json#/$defs/angle-convex"
+        }
       },
-      "required": ["x"]
+      "required": [
+        "x"
+      ]
     },
     "camera-fov-y": {
       "type": "object",
       "unevaluatedProperties": false,
       "properties": {
-        "y": { "$ref": "base-types.schema.json#/$defs/angle-convex" }
+        "y": {
+          "$ref": "base-types.schema.json#/$defs/angle-convex"
+        }
       },
-      "required": ["y"]
+      "required": [
+        "y"
+      ]
     },
     "camera-fov-min": {
       "type": "object",
       "unevaluatedProperties": false,
       "properties": {
-        "min": { "$ref": "base-types.schema.json#/$defs/angle-convex" }
+        "min": {
+          "$ref": "base-types.schema.json#/$defs/angle-convex"
+        }
       },
-      "required": ["min"]
+      "required": [
+        "min"
+      ]
     },
     "camera-fov-max": {
       "type": "object",
       "unevaluatedProperties": false,
       "properties": {
-        "max": { "$ref": "base-types.schema.json#/$defs/angle-convex" }
+        "max": {
+          "$ref": "base-types.schema.json#/$defs/angle-convex"
+        }
       },
-      "required": ["max"]
+      "required": [
+        "max"
+      ]
     },
     "ambient-light": {
       "type": "object",
       "unevaluatedProperties": false,
       "properties": {
-        "color": { "$ref": "base-types.schema.json#/$defs/ldr-color" }
+        "color": {
+          "$ref": "base-types.schema.json#/$defs/ldr-color"
+        }
       },
-      "required": ["color"]
+      "required": [
+        "color"
+      ]
     },
     "hdr": {
       "type": "object",
       "unevaluatedProperties": false,
       "properties": {
-        "gamma": { "type": "number" },
-        "exposure": { "type": "number" }
+        "gamma": {
+          "type": "number"
+        },
+        "exposure": {
+          "type": "number"
+        }
       }
+    },
+    "imageSize": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "properties": {
+        "width": {
+          "type": "integer"
+        },
+        "height": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "width",
+        "height"
+      ]
     }
   }
 }

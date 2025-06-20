@@ -35,6 +35,31 @@ impl Scene {
             _ => return Err("Scene must be a JSON object".to_string()),
         };
 
+        // deserialize imageSize from json
+        let image_size = dict
+            .get("imageSize")
+            .ok_or("Missing required field: imageSize")?;
+        let (image_width, image_height) = match image_size {
+            Value::Object(dict) => {
+                let width = match dict
+                    .get("width")
+                    .ok_or("Missing required field: image width")?
+                {
+                    Value::Number(w) => *w,
+                    _ => return Err("image width must be a number".to_string()),
+                };
+                let height = match dict
+                    .get("height")
+                    .ok_or("Missing required field: image height")?
+                {
+                    Value::Number(h) => *h,
+                    _ => return Err("image height must be a number".to_string()),
+                };
+                (width as usize, height as usize)
+            }
+            _ => return Err("imageSize must be a JSON object".to_string()),
+        };
+
         let camera_json = dict.get("camera").ok_or("Missing required field: camera")?;
         let camera = camera::from_json_value(camera_json, screen_aspect_ratio)?;
 
@@ -117,6 +142,8 @@ impl Scene {
         let mut cache = ImageCache::new(image_loader);
 
         Ok(Scene(CoreScene {
+            image_width,
+            image_height,
             camera,
             objects: objects
                 .into_iter()

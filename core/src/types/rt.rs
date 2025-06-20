@@ -33,6 +33,8 @@ pub trait Camera {
 }
 
 pub struct Scene {
+    pub image_width: usize,
+    pub image_height: usize,
     pub camera: Box<dyn Camera + Send + Sync>,
     pub objects: Vec<Box<dyn RTObject + Send + Sync>>,
     pub lights: Vec<Box<dyn Light + Send + Sync>>,
