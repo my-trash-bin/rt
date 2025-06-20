@@ -94,7 +94,7 @@ fn args() -> Result<ArgsResult, Box<dyn Error>> {
                 .iter()
                 .flat_map(|x| vec![x.0, x.1])
                 .collect();
-            let flag = parts[0];
+            let flag = if parts.len() == 2 { parts[0] } else { arg };
             let value = if parts.len() == 2 {
                 Some(parts[1].to_string())
             } else {
