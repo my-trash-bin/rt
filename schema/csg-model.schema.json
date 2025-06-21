@@ -76,6 +76,7 @@
             { "type": "number", "exclusiveMinimum": 0 }
           ]
         },
+        "position": { "$ref": "base-types.schema.json#/$defs/position" },
         "material": { "$ref": "#/$defs/material" }
       },
       "required": ["type"]
