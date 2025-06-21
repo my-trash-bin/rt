@@ -65,49 +65,15 @@ impl Scene {
         let camera_json = dict.get("camera").ok_or("Missing required field: camera")?;
         let camera = camera::from_json_value(camera_json, screen_aspect_ratio)?;
 
-        let sky_color_json = dict
-            .get("voidColor")
-            .ok_or("Missing required field: voidColor")?;
-        let sky_color = match sky_color_json {
-            Value::Array(array) if array.len() == 3 => {
-                let r = match &array[0] {
-                    Value::Number(n) => *n,
-                    _ => return Err("voidColor[0] must be a number".to_string()),
-                };
-                let g = match &array[1] {
-                    Value::Number(n) => *n,
-                    _ => return Err("voidColor[1] must be a number".to_string()),
-                };
-                let b = match &array[2] {
-                    Value::Number(n) => *n,
-                    _ => return Err("voidColor[2] must be a number".to_string()),
-                };
-                HDRColor { r, g, b }
-            }
-            _ => return Err("voidColor must be an array of 3 numbers".to_string()),
-        };
+        let void_color = hdr_color_from_json_value(
+            dict.get("voidColor")
+                .ok_or("Missing required field: voidColor")?,
+        )?;
 
-        let ambient_light_json = dict
-            .get("ambientLight")
-            .ok_or("Missing required field: ambientLight")?;
-        let ambient_light = match ambient_light_json {
-            Value::Array(array) if array.len() == 3 => {
-                let r = match &array[0] {
-                    Value::Number(n) => *n,
-                    _ => return Err("ambientLight[0] must be a number".to_string()),
-                };
-                let g = match &array[1] {
-                    Value::Number(n) => *n,
-                    _ => return Err("ambientLight[1] must be a number".to_string()),
-                };
-                let b = match &array[2] {
-                    Value::Number(n) => *n,
-                    _ => return Err("ambientLight[2] must be a number".to_string()),
-                };
-                HDRColor { r, g, b }
-            }
-            _ => return Err("ambientLight must be an array of 3 numbers".to_string()),
-        };
+        let ambient_light = hdr_color_from_json_value(
+            dict.get("ambientLight")
+                .ok_or("Missing required field: ambientLight")?,
+        )?;
 
         let mut objects: Vec<Box<dyn RTObject + Send + Sync>> = Vec::new();
         let mut lights: Vec<Box<dyn core::types::rt::Light + Send + Sync>> = Vec::new();
@@ -150,7 +116,7 @@ impl Scene {
             camera,
             objects,
             lights,
-            sky_color: Arc::new(move |_| sky_color),
+            sky_color: Arc::new(move |_| void_color),
             ambient_light,
         }))
     }
