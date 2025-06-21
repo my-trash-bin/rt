@@ -1,6 +1,8 @@
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
 use crate::{
+    object::material_from_json_value,
+    position_from_json_value,
     texture::{DeserializableTexture, Texture},
     ImageCache, ImageLoader,
 };
@@ -10,6 +12,7 @@ use core::types::{
     math::{Direction, Position, Vec3},
     rt::{Hit, Ray},
 };
+use jsonc::Value;
 use types::LDRColor;
 
 #[derive(Clone, Debug)]
@@ -132,4 +135,30 @@ impl RTObject for Sphere {
 
         result
     }
+}
+
+pub fn from_json_value(
+    dict: &HashMap<String, Value>,
+    image_cache: &ImageCache<impl ImageLoader>,
+) -> Result<Box<dyn RTObject + Send + Sync>, String> {
+    let Value::Number(radius) = dict.get("radius").ok_or("Missing required field: radius")? else {
+        return Err("Radius must be a number".to_string());
+    };
+    if *radius <= 0.0 {
+        return Err("Radius must be greater than 0".to_string());
+    }
+    let position = dict
+        .get("position")
+        .map(position_from_json_value)
+        .unwrap_or(Ok(Position::new(Vec3::ZERO)))?;
+    let (albedo, roughness, metallic) =
+        material_from_json_value(dict.get("material"), image_cache)?;
+    Ok(Box::new(Sphere {
+        radius: *radius,
+        position,
+        albedo,
+        roughness,
+        metallic,
+        texture: None,
+    }))
 }

@@ -22,39 +22,16 @@
         "a": { "$ref": "#/$defs/root" },
         "b": { "$ref": "#/$defs/root" }
       },
-      "required": ["type", "a", "b"],
-      "allOf": [{ "$ref": "#/$defs/has-optional-transform" }]
+      "required": ["type", "a", "b"]
     },
     "material": {
       "type": "object",
       "unevaluatedProperties": false,
       "properties": {
-        "ambient": { "$ref": "#/$defs/map" },
-        "diffuse": { "$ref": "#/$defs/map" },
-        "specular": { "$ref": "#/$defs/map" },
-        "specularLobe": { "type": "number" },
-        "normal": { "$ref": "#/$defs/map" }
+        "albedo": { "$ref": "base-types.schema.json#/$defs/ldr-color" },
+        "roughness": { "type": "number" },
+        "metallic": { "type": "number" }
       }
-    },
-    "material-no-map": {
-      "type": "object",
-      "unevaluatedProperties": false,
-      "properties": {
-        "ambient": { "$ref": "base-types.schema.json#/$defs/ldr-color" },
-        "diffuse": { "$ref": "base-types.schema.json#/$defs/ldr-color" },
-        "specular": { "$ref": "base-types.schema.json#/$defs/ldr-color" },
-        "specularLobe": { "type": "number" },
-        "normal": { "$ref": "base-types.schema.json#/$defs/ldr-color" }
-      }
-    },
-    "map": {
-      "oneOf": [
-        { "$ref": "base-types.schema.json#/$defs/ldr-color" },
-        { "type": "string", "description": "path to map" }
-      ]
-    },
-    "has-optional-transform": {
-      "properties": { "transform": { "$ref": "base-types.schema.json#/$defs/transform" } }
     },
     "primitive-sphere": {
       "type": "object",
@@ -70,90 +47,10 @@
           "description": "radius of sphere",
           "exclusiveMinimum": 0
         },
+        "position": { "$ref": "base-types.schema.json#/$defs/position" },
         "material": { "$ref": "#/$defs/material" }
       },
-      "required": ["type"],
-      "allOf": [
-        { "$ref": "#/$defs/has-optional-transform" }
-      ]
-    },
-    "primitive-cone": {
-      "type": "object",
-      "unevaluatedProperties": false,
-      "properties": {
-        "type": {
-          "type": "string",
-          "description": "type of solid geometry",
-          "enum": ["cone"]
-        },
-        "radius": {
-          "type": "number",
-          "description": "radius of cone bottom",
-          "exclusiveMinimum": 0
-        },
-        "height": {
-          "type": "number",
-          "description": "cone height",
-          "exclusiveMinimum": 0
-        },
-        "material": {
-          "oneOf": [
-            { "$ref": "#/$defs/material" },
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/material",
-                "description": "material for [side, bottom]"
-              },
-              "minItems": 2,
-              "maxItems": 2
-            }
-          ]
-        }
-      },
-      "required": ["type"],
-      "allOf": [
-        { "$ref": "#/$defs/has-optional-transform" }
-      ]
-    },
-    "primitive-cylinder": {
-      "type": "object",
-      "unevaluatedProperties": false,
-      "properties": {
-        "type": {
-          "type": "string",
-          "description": "type of solid geometry",
-          "enum": ["cylinder"]
-        },
-        "radius": {
-          "type": "number",
-          "description": "radius of cylinder bottom",
-          "exclusiveMinimum": 0
-        },
-        "height": {
-          "type": "number",
-          "description": "cylinder height",
-          "exclusiveMinimum": 0
-        },
-        "material": {
-          "oneOf": [
-            { "$ref": "#/$defs/material" },
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/material",
-                "description": "material for [side, top, bottom]"
-              },
-              "minItems": 3,
-              "maxItems": 3
-            }
-          ]
-        }
-      },
-      "required": ["type"],
-      "allOf": [
-        { "$ref": "#/$defs/has-optional-transform" }
-      ]
+      "required": ["type"]
     },
     "primitive-cube": {
       "type": "object",
@@ -179,51 +76,9 @@
             { "type": "number", "exclusiveMinimum": 0 }
           ]
         },
-        "material": {
-          "oneOf": [
-            { "$ref": "#/$defs/material" },
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/material",
-                "description": "material for [top, bottom, left, right, front, back]"
-              },
-              "minItems": 6,
-              "maxItems": 6
-            }
-          ]
-        }
-      },
-      "required": ["type"],
-      "allOf": [
-        { "$ref": "#/$defs/has-optional-transform" }
-      ]
-    },
-    "primitive-torus": {
-      "type": "object",
-      "unevaluatedProperties": false,
-      "properties": {
-        "type": {
-          "type": "string",
-          "description": "type of solid geometry",
-          "enum": ["torus"]
-        },
-        "majorRadius": {
-          "type": "number",
-          "description": "major radius of torus",
-          "exclusiveMinimum": 0
-        },
-        "minorRadius": {
-          "type": "number",
-          "description": "minor radius of torus",
-          "exclusiveMinimum": 0
-        },
         "material": { "$ref": "#/$defs/material" }
       },
-      "required": ["type"],
-      "allOf": [
-        { "$ref": "#/$defs/has-optional-transform" }
-      ]
+      "required": ["type"]
     },
     "primitive-plane": {
       "type": "object",
@@ -273,18 +128,15 @@
         },
         "isPointInside": { "type": "boolean" },
         "point": { "$ref": "base-types.schema.json#/$defs/position" },
-        "material": { "$ref": "#/$defs/material-no-map" }
+        "material": { "$ref": "#/$defs/material" },
+        "position": { "$ref": "base-types.schema.json#/$defs/position" }
       },
-      "required": ["coefficients"],
-      "allOf": [{ "$ref": "#/$defs/has-optional-transform" }]
+      "required": ["coefficients", "isPointInside", "point"]
     },
     "primitive": {
       "oneOf": [
         { "$ref": "#/$defs/primitive-sphere" },
-        { "$ref": "#/$defs/primitive-cone" },
-        { "$ref": "#/$defs/primitive-cylinder" },
         { "$ref": "#/$defs/primitive-cube" },
-        { "$ref": "#/$defs/primitive-torus" },
         { "$ref": "#/$defs/primitive-plane" }
       ]
     }

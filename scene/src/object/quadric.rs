@@ -8,23 +8,24 @@ use super::{util::enhance_normal, RTObject};
 
 #[derive(Clone, Debug)]
 pub struct Quadric {
-    position: Position,
-    albedo: LDRColor,
-    roughness: f64,
-    metallic: f64,
+    pub position: Position,
+    pub albedo: LDRColor,
+    pub roughness: f64,
+    pub metallic: f64,
 
-    c200: f64,
-    c020: f64,
-    c002: f64,
-    c110: f64,
-    c011: f64,
-    c101: f64,
-    c100: f64,
-    c010: f64,
-    c001: f64,
-    c000: f64,
+    pub c200: f64,
+    pub c020: f64,
+    pub c002: f64,
+    pub c110: f64,
+    pub c011: f64,
+    pub c101: f64,
+    pub c100: f64,
+    pub c010: f64,
+    pub c001: f64,
+    pub c000: f64,
 
-    inside: Position,
+    pub point: Position,
+    pub is_point_inside: bool,
 }
 
 impl Quadric {
@@ -158,15 +159,15 @@ impl Quadric {
 
 impl RTObject for Quadric {
     fn test(&self, ray: Ray) -> Vec<Hit> {
-        let (inside_direction, inside_length) = (ray.origin - self.inside).direction_and_length();
-        let inside = if let Some((hit1, hit2)) = self.internal_test(Ray {
-            origin: self.inside,
+        let (inside_direction, inside_length) = (ray.origin - self.point).direction_and_length();
+        let inside = (if let Some((hit1, hit2)) = self.internal_test(Ray {
+            origin: self.point,
             direction: inside_direction,
         }) {
             (hit1.distance < inside_length) == (hit2.distance < inside_length)
         } else {
             true
-        };
+        }) == self.is_point_inside;
 
         let mut result = Vec::new();
 

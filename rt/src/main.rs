@@ -1,9 +1,12 @@
-use scene::{Image, ImageLoader, Scene};
-use std::env;
-use std::error::Error;
-use std::sync::Arc;
-
 use bmp::{MinirtBmp, MinirtBmpPixel};
+use scene::{Image, ImageCache, ImageLoader, Scene};
+use std::error::Error;
+use std::io::Write;
+use std::path::Path;
+use std::sync::Arc;
+use std::{env, path::PathBuf};
+use types::{HDRColor, LDRColor};
+
 use core::types::math::Vec3;
 
 #[derive(Debug)]
@@ -291,6 +294,8 @@ fn args() -> Result<ArgsResult, Box<dyn Error>> {
             return Err("Cannot use both output file and --stdout/-S".into());
         }
         result.output = Some(positionals[1].clone());
+    } else if !result.stdout {
+        return Err("Missing required output file".into());
     }
 
     Ok(ArgsResult::Ok(result))
@@ -303,79 +308,52 @@ impl<'a> Renderer<'a> {
         let scene = &self.0 .0;
         let width = scene.image_width;
         let height = scene.image_height;
+        let aspect_ratio = (height as f64) / (width as f64);
 
         let u = (x as f64 + 0.5) / width as f64;
-        let v = (y as f64 + 0.5) / height as f64;
+        let v = (y as f64 + 0.5) / height as f64 * aspect_ratio;
 
         let hdr_color = core::sample(scene, u, v);
+        let color = tmp_hdr_to_ldr(hdr_color);
 
         MinirtBmpPixel {
-            r: (hdr_color.r.min(1.0) * 255.0) as u8,
-            g: (hdr_color.g.min(1.0) * 255.0) as u8,
-            b: (hdr_color.b.min(1.0) * 255.0) as u8,
+            r: (color.r * 255.0) as u8,
+            g: (color.g * 255.0) as u8,
+            b: (color.b * 255.0) as u8,
         }
     }
 }
 
 fn main() {
-    println!("Program entry point");
     match args() {
         Ok(ArgsResult::Ok(a)) => {
             if let Err(e) = (|| -> Result<(), String> {
                 let json_content = std::fs::read_to_string(&a.input).map_err(|e| e.to_string())?;
                 let json_value = jsonc::parse(&json_content)?;
 
-                struct DummyImage;
-                impl Image for DummyImage {
-                    fn width(&self) -> usize {
-                        1
-                    }
-                    fn height(&self) -> usize {
-                        1
-                    }
-                    fn get(&self, _x: usize, _y: usize) -> [f64; 3] {
-                        [0.0, 0.0, 0.0]
-                    }
-                }
-
-                struct DummyLoader;
-                impl ImageLoader for DummyLoader {
-                    fn load(&self, _path: &str) -> Arc<dyn Image + Send + Sync> {
-                        Arc::new(DummyImage)
-                    }
-                }
-
-                let loader = DummyLoader;
-                let scene = Scene::from_json_value(json_value, 1.0, &loader)?;
+                let image_loader = ImageImageLoader::new(".");
+                let mut image_cache = ImageCache::new(&image_loader);
+                let scene = Scene::from_json_value(json_value, &mut image_cache)?;
 
                 let r = Renderer(&scene);
-                let b = MinirtBmp::new(scene.0.image_width, scene.0.image_height, |x, y| {
+                let bmp = MinirtBmp::new(scene.0.image_width, scene.0.image_height, |x, y| {
                     r.render(x, y)
                 });
 
-                let bmp_data = b.serialize().map_err(|e| e.to_string())?;
-
+                let bmp_bytes = bmp.serialize();
                 if a.stdout {
-                    use std::io::Write;
                     std::io::stdout()
-                        .write_all(&bmp_data)
+                        .write_all(&bmp_bytes)
                         .map_err(|e| e.to_string())?;
                 } else {
-                    let output_path = a.output.unwrap_or_else(|| {
-                        let mut path = a.input.clone();
-                        if path.ends_with(".rt") {
-                            path.truncate(path.len() - 3);
-                            path.push_str(".bmp");
-                        } else if !a.no_output_bmp_suffix {
-                            path.push_str(".bmp");
-                        }
-
-                        path
-                    });
-                    std::fs::write(&output_path, &bmp_data).map_err(|e| e.to_string())?;
-                    println!("Rendered to: {}", output_path);
+                    let output = a.output.unwrap();
+                    let output = if output.ends_with(".bmp") || a.no_output_bmp_suffix {
+                        output
+                    } else {
+                        format!("{output}.bmp")
+                    };
+                    std::fs::write(output, bmp_bytes).map_err(|e| e.to_string())?;
                 }
-
                 Ok(())
             })() {
                 eprintln!("Error: {}", e);
@@ -387,5 +365,78 @@ fn main() {
             eprintln!("Error: {}", e);
             std::process::exit(1);
         }
+    }
+}
+
+fn tmp_hdr_to_ldr(color: HDRColor) -> LDRColor {
+    const GAMMA: f64 = 2.2;
+    const EXPOSURE: f64 = 1.0;
+
+    let r = 1.0 - (-color.r * EXPOSURE).exp();
+    let g = 1.0 - (-color.g * EXPOSURE).exp();
+    let b = 1.0 - (-color.b * EXPOSURE).exp();
+
+    LDRColor {
+        r: r.powf(1.0 / GAMMA),
+        g: g.powf(1.0 / GAMMA),
+        b: b.powf(1.0 / GAMMA),
+    }
+}
+
+struct BmpImage {
+    image: MinirtBmp,
+}
+
+impl BmpImage {
+    fn new(path: &str) -> Result<BmpImage, Box<dyn Error>> {
+        let buffer = std::fs::read(path)?;
+        let image = MinirtBmp::deserialize(&buffer)?;
+        Ok(BmpImage { image })
+    }
+}
+
+impl Image for BmpImage {
+    fn width(&self) -> usize {
+        self.image.width
+    }
+
+    fn height(&self) -> usize {
+        self.image.height
+    }
+
+    fn get(&self, x: usize, y: usize) -> [f64; 3] {
+        if x >= self.width() || y >= self.height() {
+            panic!("Incorrect coord given");
+        }
+
+        let pixel = &self.image.extra[y * self.image.width + x];
+
+        [
+            pixel.r as f64 / 255.0,
+            pixel.g as f64 / 255.0,
+            pixel.b as f64 / 255.0,
+        ]
+    }
+}
+
+struct ImageImageLoader {
+    scene_dir: PathBuf,
+}
+
+impl ImageImageLoader {
+    fn new<P: AsRef<Path>>(scene_path: P) -> Self {
+        let scene_dir = scene_path
+            .as_ref()
+            .parent()
+            .unwrap_or_else(|| Path::new(""))
+            .to_path_buf();
+        ImageImageLoader { scene_dir }
+    }
+}
+
+impl ImageLoader for ImageImageLoader {
+    fn load(&self, path: &str) -> Arc<dyn Image + Send + Sync> {
+        let full_path = self.scene_dir.join(path);
+        Arc::new(BmpImage::new(full_path.to_str().expect("Invalid path")).expect("Invalid image"))
     }
 }
