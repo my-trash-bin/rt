@@ -14,86 +14,68 @@ use types::LDRColor;
 
 #[derive(Clone, Debug)]
 pub struct Plane {
-    position: Position,
-    normal: Direction,
-    albedo: LDRColor,
-    roughness: f64,
-    metallic: f64,
+    pub position: Position,
+    pub albedo: LDRColor,
+    pub roughness: f64,
+    pub metallic: f64,
+
+    pub c100: f64,
+    pub c010: f64,
+    pub c001: f64,
+    pub c000: f64,
+
+    pub point: Position,
+    pub is_point_inside: bool,
+}
+
+fn linear_roots(a: f64, b: f64) -> Vec<f64> {
+    if b.abs() <= 1e-6 {
+        vec![]
+    } else {
+        vec![-b / a]
+    }
 }
 
 impl RTObject for Plane {
     fn test(&self, ray: Ray) -> Vec<Hit> {
-        let mut result = Vec::new();
+        let origin: Position = (ray.origin - self.position).into();
 
-        // Compute intersection distance t
-        let denominator = self.normal.dot(ray.direction);
-        if denominator.abs() < 1e-6 {
-            return result; // Ray is parallel to the plane, no intersection
-        }
+        let (a, b) = {
+            let mut a = 0.0;
+            let mut b = 0.0;
 
-        let t = -(ray.origin.dot(*self.normal) - self.position.dot(*self.normal)) / denominator;
+            // c100
+            a += self.c100 * ray.direction.x;
+            b += self.c100 * origin.x;
+            // c010
+            a += self.c010 * ray.direction.y;
+            b += self.c010 * origin.y;
+            // c001
+            a += self.c001 * ray.direction.z;
+            b += self.c001 * origin.z;
+            // c000
+            b += self.c000;
+            // done
+            (a, b)
+        };
 
-        if t < 0.0 {
-            // The intersection is behind the ray's origin
-            if self.normal.dot(ray.direction) < 0.0 {
-                result.push(Hit {
-                    distance: 0.0,
-                    normal: -ray.direction,
-                    albedo: self.albedo,
-                    is_front_face: true,
-                    roughness: self.roughness,
-                    metallic: self.metallic,
-                });
-                result.push(Hit {
-                    distance: f64::INFINITY,
-                    normal: ray.direction,
-                    albedo: self.albedo,
-                    is_front_face: false,
-                    roughness: self.roughness,
-                    metallic: self.metallic,
-                });
-            }
-            return result;
-        }
-
-        if self.normal.dot(ray.direction) < 0.0 {
-            result.push(Hit {
-                distance: t,
-                normal: self.normal,
+        linear_roots(a, b)
+            .into_iter()
+            .filter(|t| *t >= 0.0)
+            .map(|distance| Hit {
+                distance,
+                normal: normal(self),
                 albedo: self.albedo,
-                is_front_face: true,
+                is_front_face: true, // decided later
                 roughness: self.roughness,
                 metallic: self.metallic,
-            });
-            result.push(Hit {
-                distance: f64::INFINITY,
-                normal: ray.direction,
-                albedo: self.albedo,
-                is_front_face: false,
-                roughness: self.roughness,
-                metallic: self.metallic,
-            });
-        } else {
-            result.push(Hit {
-                distance: 0.0,
-                normal: -ray.direction,
-                albedo: self.albedo,
-                is_front_face: true,
-                roughness: self.roughness,
-                metallic: self.metallic,
-            });
-            result.push(Hit {
-                distance: t,
-                normal: self.normal,
-                albedo: self.albedo,
-                is_front_face: false,
-                roughness: self.roughness,
-                metallic: self.metallic,
-            });
-        }
-
-        result
+            })
+            .collect()
     }
+}
+
+fn normal(thiz: &Plane) -> Direction {
+    Direction::new(Vec3::new(thiz.c100, thiz.c010, thiz.c001))
 }
 
 pub fn from_json_value(
@@ -360,11 +342,16 @@ pub fn from_json_value(
         }))
     } else {
         Ok(Box::new(Plane {
-            position, // TODO: add proper position by c100, c010, c001, c000
-            normal: Direction::new(Vec3::new(c100, c010, c001)),
+            position,
             albedo,
             roughness,
             metallic,
+            c100,
+            c010,
+            c001,
+            c000,
+            point,
+            is_point_inside: *is_point_inside,
         }))
     }
 }
