@@ -16,11 +16,10 @@ pub struct MinirtBmp {
 }
 
 impl MinirtBmp {
-    pub fn new(
-        width: usize,
-        height: usize,
-        fill: impl Fn(usize, usize) -> MinirtBmpPixel,
-    ) -> MinirtBmp {
+    pub fn new<T>(width: usize, height: usize, mut fill: T) -> MinirtBmp
+    where
+        T: FnMut(usize, usize) -> MinirtBmpPixel,
+    {
         let mut extra = Vec::with_capacity(width * height);
         for y in 0..height {
             for x in 0..width {

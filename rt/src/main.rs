@@ -1,5 +1,4 @@
 use bmp::{MinirtBmp, MinirtBmpPixel};
-use core::sample;
 use scene::{Image, ImageCache, ImageLoader, Scene};
 use std::error::Error;
 use std::io::Write;
@@ -302,6 +301,29 @@ fn args() -> Result<ArgsResult, Box<dyn Error>> {
     Ok(ArgsResult::Ok(result))
 }
 
+struct Renderer<'a>(&'a Scene);
+
+impl<'a> Renderer<'a> {
+    fn render(&self, x: usize, y: usize) -> MinirtBmpPixel {
+        let scene = &self.0 .0;
+        let width = scene.image_width;
+        let height = scene.image_height;
+        let aspect_ratio = (height as f64) / (width as f64);
+
+        let u = (x as f64 + 0.5) / width as f64;
+        let v = (y as f64 + 0.5) / height as f64 * aspect_ratio;
+
+        let hdr_color = core::sample(scene, u, v);
+        let color = tmp_hdr_to_ldr(hdr_color);
+
+        MinirtBmpPixel {
+            r: (color.r * 255.0) as u8,
+            g: (color.g * 255.0) as u8,
+            b: (color.b * 255.0) as u8,
+        }
+    }
+}
+
 fn main() {
     match args() {
         Ok(ArgsResult::Ok(a)) => {
@@ -312,15 +334,12 @@ fn main() {
                 let image_loader = ImageImageLoader::new(".");
                 let mut image_cache = ImageCache::new(&image_loader);
                 let scene = Scene::from_json_value(json_value, &mut image_cache)?;
+
+                let r = Renderer(&scene);
                 let bmp = MinirtBmp::new(scene.0.image_width, scene.0.image_height, |x, y| {
-                    let color = sample(&scene.0, x as f64, y as f64);
-                    let color = tmp_hdr_to_ldr(color);
-                    MinirtBmpPixel {
-                        r: (color.r * 255.0) as u8,
-                        g: (color.g * 255.0) as u8,
-                        b: (color.b * 255.0) as u8,
-                    }
+                    r.render(x, y)
                 });
+
                 let bmp_bytes = bmp.serialize();
                 if a.stdout {
                     std::io::stdout()
