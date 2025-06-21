@@ -2,7 +2,6 @@ use core::types::rt::Light;
 use directional::DirectionalLight;
 use jsonc::Value;
 use point::PointLight;
-use spot::SpotLight;
 
 use crate::{
     angle_from_json_value, direction_from_json_value, hdr_color_from_json_value,
@@ -10,7 +9,6 @@ use crate::{
 };
 pub mod directional;
 pub mod point;
-pub mod spot;
 
 /// Parse a light directly from a JSON value.
 pub fn from_json_value(json: &Value) -> Result<Box<dyn Light + Send + Sync>, String> {
@@ -60,46 +58,6 @@ pub fn from_json_value(json: &Value) -> Result<Box<dyn Light + Send + Sync>, Str
             let direction = direction_from_json_value(direction_json)?;
 
             Box::new(DirectionalLight::new(color, direction))
-        }
-        "spot" => {
-            let color_json = dict.get("color").ok_or("Missing required field: color")?;
-            let color = hdr_color_from_json_value(color_json)?;
-
-            let position_json = dict
-                .get("position")
-                .ok_or("Missing required field: position")?;
-            let position = position_from_json_value(position_json)?;
-
-            let angle_json = dict.get("angle").ok_or("Missing required field: angle")?;
-            let angle = angle_from_json_value(angle_json)?;
-
-            let direction_json = dict
-                .get("direction")
-                .ok_or("Missing required field: direction")?;
-            let direction = direction_from_json_value(direction_json)?;
-
-            let range = if let Some(Value::Number(r)) = dict.get("range") {
-                if *r <= 0.0 {
-                    return Err("range must be greater than 0".to_string());
-                }
-                *r
-            } else {
-                f64::INFINITY
-            };
-
-            let attenuation = if let Some(Value::Bool(a)) = dict.get("attenuation") {
-                *a
-            } else {
-                true
-            };
-            Box::new(SpotLight::new(
-                color,
-                position,
-                angle,
-                direction,
-                range,
-                attenuation,
-            ))
         }
         _ => return Err(format!("Unknown light type: {}", type_str)),
     };

@@ -85,7 +85,7 @@ impl Scene {
                         if let Value::Object(item_dict) = item {
                             if let Some(Value::String(type_str)) = item_dict.get("type") {
                                 match type_str.as_str() {
-                                    "point" | "directional" | "spot" => {
+                                    "point" | "directional" => {
                                         let light = light::from_json_value(item)?;
                                         lights.push(light);
                                     }
