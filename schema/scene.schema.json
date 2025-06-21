@@ -17,16 +17,6 @@
         "ambientLight": {
           "$ref": "base-types.schema.json#/$defs/hdr-color"
         },
-        "hdr": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/hdr"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
         "camera": {
           "$ref": "#/$defs/camera"
         },
@@ -35,16 +25,13 @@
           "items": {
             "$ref": "object.schema.json#/$defs/root"
           }
-        },
-        "defs": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "object.schema.json#/$defs/root"
-          }
         }
       },
       "required": [
-        "camera"
+        "camera",
+        "imageSize",
+        "voidColor",
+        "ambientLight"
       ]
     },
     "camera": {
@@ -166,7 +153,7 @@
       "unevaluatedProperties": false,
       "properties": {
         "color": {
-          "$ref": "base-types.schema.json#/$defs/ldr-color"
+          "$ref": "base-types.schema.json#/$defs/hdr-color"
         }
       },
       "required": [
