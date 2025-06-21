@@ -1,0 +1,154 @@
+{
+  "imageSize": {
+    "width": 900,
+    "height": 600
+  },
+  "camera": {
+    "fov": {
+      "max": {
+        "degree": 60
+      }
+    }, // FOV 가로 세로 중 긴 축으로 60도
+    "position": [4, 5, -10],
+    "lookAt": [0, 0, 0]
+  },
+  "voidColor": [0.001, 0.001, 0.001],
+  "ambientLight": [0.0, 0.0, 0.0],
+  "hdr": {
+    // 기본값
+    "gamma": 2.2,
+    "exposure": 1.0
+  },
+  "objects": [
+    {
+      "type": "point",
+      "color": [500.0, 500.0, 500.0],
+      "position": [8, 7, -10],
+      "attenuation": true
+    },
+    {
+      "type": "directional",
+      "color": [10.0, 10.0, 10.0],
+      "direction": [-5, -5, 10],
+    },
+
+    {
+      "type": "csg",
+      "model": {
+        "type": "sphere",
+        "radius": 10.0,
+        "position": [-5, -13, 10],
+        "material": {
+          "albedo": [0.1, 0.1, 0.1],
+          "metallic": 0.9,
+          "roughness": 0.1
+        }
+      }
+    },
+    {
+      "type": "csg",
+      "model": {
+        "type": "sphere",
+        "radius": 10.0,
+        "position": [-30, -13, 50],
+        "material": {
+          "albedo": [0.1, 0.1, 0.1],
+          "metallic": 0.9,
+          "roughness": 0.1
+        }
+      }
+    },
+    {
+      "type": "csg",
+      "model": {
+        "type": "difference",
+        "a": {
+          "type": "difference",
+          "a": {
+            "type": "difference",
+            "a": {
+              "type": "difference",
+              "a": {
+                "type": "difference",
+                "a": {
+                  "type": "difference",
+                  "a": {
+                    "type": "cube",
+                    "size": [3, 3, 3],
+                    "position": [0, 0, 0],
+                    "material": {
+                      "albedo": [0.5, 0.05, 0.05],
+                      "metallic": 0.7,
+                      "roughness": 0.1
+                    }
+                  },
+                  "b": {
+                    "type": "sphere",
+                    "radius": 1.22,
+                    "position": [0, 0, -1.5],
+                    "material": {
+                      "albedo": [0.1, 0.5, 0.1],
+                      "metallic": 0.7,
+                      "roughness": 0.1
+                    }
+                  }
+                },
+                "b": {
+                  "type": "sphere",
+                  "radius": 1.22,
+                  "position": [-1.5, 0, 0],
+                  "material": {
+                    "albedo": [0.1, 0.1, 0.8],
+                    "metallic": 0.2,
+                    "roughness": 0.8
+                  }
+                }
+              },
+              "b": {
+                "type": "sphere",
+                "radius": 1.22,
+                "position": [1.5, 0, 0],
+                "material": {
+                  "albedo": [0.1, 0.1, 0.8],
+                  "metallic": 0.2,
+                  "roughness": 0.8
+                }
+              }
+            },
+            "b": {
+              "type": "sphere",
+              "radius": 1.22,
+              "position": [0, 0, 1.5],
+              "material": {
+                "albedo": [0.1, 0.1, 0.8],
+                "metallic": 0.2,
+                "roughness": 0.8
+              }
+            }
+          },
+          "b": {
+            "type": "sphere",
+            "radius": 1.22,
+            "position": [0, 1.5, 0],
+            "material": {
+              "albedo": [0.1, 0.1, 0.8],
+              "metallic": 0.2,
+              "roughness": 0.8
+            }
+          }
+        },
+        "b": {
+          "type": "sphere",
+          "radius": 1.22,
+          "position": [0, -1.5, 0],
+          "material": {
+            "albedo": [0.1, 0.1, 0.8],
+            "metallic": 0.2,
+            "roughness": 0.8
+          }
+        }
+      }
+    },
+    
+  ]
+}
