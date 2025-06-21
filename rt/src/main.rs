@@ -306,12 +306,11 @@ struct Renderer<'a>(&'a Scene);
 impl<'a> Renderer<'a> {
     fn render(&self, x: usize, y: usize) -> MinirtBmpPixel {
         let scene = &self.0 .0;
-        let width = scene.image_width;
-        let height = scene.image_height;
-        let aspect_ratio = (height as f64) / (width as f64);
+        let width = scene.image_width as f64;
+        let height = scene.image_height as f64;
 
-        let u = (x as f64 + 0.5) / width as f64;
-        let v = (y as f64 + 0.5) / height as f64 * aspect_ratio;
+        let u = (x as f64 + 0.5) / width;
+        let v = (y as f64 + 0.5) / height;
 
         let hdr_color = core::sample(scene, u, v);
         let color = tmp_hdr_to_ldr(hdr_color);

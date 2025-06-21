@@ -35,8 +35,8 @@ struct AspectRatio {
 enum FovMode {
     X,
     Y,
-    Cover(AspectRatio),
-    Contain(AspectRatio),
+    Cover,
+    Contain,
 }
 
 pub fn from_json_value(
@@ -76,21 +76,32 @@ pub fn from_json_value(
             let tan_half_fov_x = tan_half_fov_y * screen_aspect_ratio;
             (tan_half_fov_x, tan_half_fov_y)
         }
-        FovMode::Cover(aspect_ratio) => {
-            let tan_half_fov_x = (fov.to_radians() / 2.0).tan();
-            let tan_half_fov_y = tan_half_fov_x / aspect_ratio.aspect_ratio;
-            let scale = (screen_aspect_ratio / aspect_ratio.aspect_ratio).max(1.0);
-            (tan_half_fov_x * scale, tan_half_fov_y * scale)
+        FovMode::Cover => {
+            let tan_half_fov = (fov.to_radians() / 2.0).tan();
+            if screen_aspect_ratio > 1.0 {
+                (tan_half_fov, tan_half_fov / screen_aspect_ratio)
+            } else {
+                (tan_half_fov * screen_aspect_ratio, tan_half_fov)
+            }
         }
-        FovMode::Contain(aspect_ratio) => {
-            let tan_half_fov_x = (fov.to_radians() / 2.0).tan();
-            let tan_half_fov_y = tan_half_fov_x / aspect_ratio.aspect_ratio;
-            let scale = (screen_aspect_ratio / aspect_ratio.aspect_ratio).min(1.0);
-            (tan_half_fov_x * scale, tan_half_fov_y * scale)
+        FovMode::Contain => {
+            let tan_half_fov = (fov.to_radians() / 2.0).tan();
+            if screen_aspect_ratio > 1.0 {
+                (tan_half_fov * screen_aspect_ratio, tan_half_fov)
+            } else {
+                (tan_half_fov, tan_half_fov / screen_aspect_ratio)
+            }
         }
     };
 
-    let right = direction.cross(Vec3::Z).normalize();
+    let world_up = Vec3::Y;
+
+    let right = if direction.y.abs() > 0.9999 {
+        direction.cross(Vec3::Z).normalize()
+    } else {
+        direction.cross(world_up).normalize()
+    };
+
     let up = right.cross(*direction).normalize();
 
     Ok(Box::new(PerspectiveCamera {
@@ -117,10 +128,10 @@ fn parse_fov(json: &Value) -> Result<(f64, FovMode), String> {
         Ok((angle, FovMode::Y))
     } else if let Some(min_json) = dict.get("min") {
         let angle = parse_angle(min_json)?;
-        Ok((angle, FovMode::Contain(AspectRatio { aspect_ratio: 1.0 })))
+        Ok((angle, FovMode::Contain))
     } else if let Some(max_json) = dict.get("max") {
         let angle = parse_angle(max_json)?;
-        Ok((angle, FovMode::Cover(AspectRatio { aspect_ratio: 1.0 })))
+        Ok((angle, FovMode::Cover))
     } else {
         Err("fov must have one of: 'x', 'y', 'min', or 'max' field".to_string())
     }

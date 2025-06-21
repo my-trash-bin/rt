@@ -27,14 +27,14 @@ impl RTObject for Cube {
         let mut result = Vec::new();
 
         let min = Position::new(Vec3::new(
-            self.position.x - self.scale.x,
-            self.position.y - self.scale.y,
-            self.position.z - self.scale.z,
+            self.position.x - self.scale.x / 2.0,
+            self.position.y - self.scale.y / 2.0,
+            self.position.z - self.scale.z / 2.0,
         ));
         let max = Position::new(Vec3::new(
-            self.position.x + self.scale.x,
-            self.position.y + self.scale.y,
-            self.position.z + self.scale.z,
+            self.position.x + self.scale.x / 2.0,
+            self.position.y + self.scale.y / 2.0,
+            self.position.z + self.scale.z / 2.0,
         ));
 
         let mut t_min = f64::NEG_INFINITY;
