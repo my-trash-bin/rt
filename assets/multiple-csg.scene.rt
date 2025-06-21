@@ -14,11 +14,6 @@
   },
   "voidColor": [0.001, 0.001, 0.001],
   "ambientLight": [0.0, 0.0, 0.0],
-  "hdr": {
-    // 기본값
-    "gamma": 2.2,
-    "exposure": 1.0
-  },
   "objects": [
     {
       "type": "point",
@@ -149,6 +144,6 @@
         }
       }
     },
-    
+
   ]
 }
