@@ -1,0 +1,58 @@
+{
+  "imageSize": {
+    "width": 900,
+    "height": 600
+  },
+  "camera": {
+    "fov": {
+      "max": {
+        "degree": 60
+      }
+    }, // FOV 가로 세로 중 긴 축으로 60도
+    "position": [-3, 0, -10],
+    "lookAt": [0, 0, 0]
+  },
+  "voidColor": [0.1, 0.2, 0.3],
+  "ambientLight": [0.01, 0.01, 0.01],
+  "hdr": {
+    // 기본값
+    "gamma": 2.2,
+    "exposure": 1.0
+  },
+  "objects": [
+    {
+      "type": "point",
+      "color": [500.0, 500.0, 500.0],
+      "position": [5, 0, -10],
+      "attenuation": true
+    },
+
+    {
+      "type": "csg",
+      "model": {
+        "type": "cube",
+        "size": [1, 1, 1],
+        "position": [0, 0, 0],
+        "material": {
+          "albedo": [0.8, 0.1, 0.1],
+          "metallic": 0.7,
+          "roughness": 0.1
+        }
+      }
+    },
+
+    {
+      "type": "csg",
+      "model": {
+        "type": "sphere",
+        "radius": 0.5,
+        "position": [2, 0, 0],
+        "material": {
+          "albedo": [0.1, 0.1, 0.1],
+          "metallic": 0.7,
+          "roughness": 0.1
+        }
+      }
+    }
+  ]
+}

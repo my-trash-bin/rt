@@ -1,0 +1,50 @@
+{
+  "imageSize": {
+    "width": 900,
+    "height": 600
+  },
+  "camera": {
+    "fov": {
+      "max": {
+        "degree": 60
+      }
+    },
+    "position": [ 0, 0, -10 ],
+    "lookAt": [ 0, 0, 0 ]
+  },
+  "voidColor": [ 0.1, 0.1, 0.1 ],
+  "ambientLight": [ 0.2, 0.2, 0.2 ],
+  "objects": [
+    {
+      "type": "point",
+      "color": [ 1.0, 1.0, 1.0 ],
+      "position": [ -5, 5, -5 ]
+    },
+    {
+      "type": "csg",
+      "model": {
+        "type": "difference",
+        "a": {
+          "type": "cube",
+          "size": [ 3, 3, 3 ],
+          "material": {
+            "ambient": [ 0.1, 0.1, 0.3 ],
+            "diffuse": [ 0.2, 0.2, 0.8 ],
+            "specular": [ 0.9, 0.9, 0.9 ],
+            "specularLobe": 32
+          }
+        },
+        "b": {
+          "type": "sphere",
+          "radius": 2,
+          "material": {
+            "ambient": [ 0.3, 0.1, 0.1 ],
+            "diffuse": [ 0.8, 0.2, 0.2 ],
+            "specular": [ 0.9, 0.9, 0.9 ],
+            "specularLobe": 32
+          }
+        }
+      }
+    }
+  ]
+}

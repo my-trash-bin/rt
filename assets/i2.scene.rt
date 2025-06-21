@@ -1,0 +1,74 @@
+{
+  "imageSize": {
+    "width": 300,
+    "height": 600
+  },
+  "camera": {
+    "fov": {
+      "max": {
+        "degree": 60
+      }
+    }, // FOV 가로 세로 중 긴 축으로 60도
+    "position": [0, -5, 0],
+    "lookAt": [0, 0, 0]
+  },
+  "voidColor": [0.1, 0.2, 0.3],
+  "ambientLight": [0.3, 0.3, 0.3],
+  "hdr": {
+    // 기본값
+    "gamma": 2.2,
+    "exposure": 1.0
+  },
+  "objects": [
+    {
+      "type": "point",
+      "color": [100.0, 10.0, 10.0],
+      "position": [15, 5, 5],
+      "attenuation": true
+    },
+    {
+      "type": "point",
+      "color": [800.0, 1210.0, 710.0],
+      "position": [1, -10, 2],
+      "attenuation": true
+    },
+    // {
+    //   "type": "directional",
+    //   "color": [110.0, 0.8, 1.0],
+    //   "direction": [-0.5, -1, -0.5]
+    // },
+    // {
+    //   "type": "spot",
+    //   "color": [1.0, 0.8, 0.6],
+    //   "position": [-3, 4, 2],
+    //   "angle": {
+    //     "radian": 0.785398
+    //   },
+    //   "direction": [0.3, -0.8, 0.2],
+    //   "range": 15,
+    //   "attenuation": false
+    // },
+    {
+      "type": "csg",
+      "model": {
+        "type": "cube",
+        "size": [1, 1, 1],
+        "material": {
+          "albedo": [0.6, 0.5, 0.4],
+		  "metallic": 0.9,
+		  "roughness": 0.1
+        }
+      }
+    },
+    {
+      "type": "csg",
+      "model": {
+        "type": "plane",
+        "position": [0, 0, -5],
+        "coefficients": { "z": 1 }, // z = 0
+        "point": [0, 0, 1], // (0, 0, 1) is not inside of the plane
+        "isPointInside": false
+      }
+    }
+  ]
+}

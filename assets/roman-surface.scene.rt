@@ -16,7 +16,7 @@
           "x^2y^2": 1,
           "y^2z^2": 1,
           "x^2z^2": 1,
-          "xyz": -4
+          "xyz": -8
         },
         "point": [0.1, 0.1, 0.1],
         "isPointInside": true
