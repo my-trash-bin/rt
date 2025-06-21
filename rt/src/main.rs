@@ -112,103 +112,11 @@ fn args() -> Result<ArgsResult, Box<dyn Error>> {
 
             match flag {
                 "no-output-bmp-suffix" => result.no_output_bmp_suffix = true,
-                "width" => {
-                    result.width = Some(parse(
-                        value.ok_or("Missing --width value")?.as_str(),
-                        "width",
-                    )?)
-                }
-                "height" => {
-                    result.height = Some(parse(
-                        value.ok_or("Missing --height value")?.as_str(),
-                        "height",
-                    )?)
-                }
-                "camera-position" => {
-                    result.camera_position = Some(parse_vec3(
-                        value.ok_or("Missing --camera-position")?.as_str(),
-                        "camera-position",
-                    )?)
-                }
-                "camera-direction" => {
-                    if result.camera_look_at.is_some() {
-                        return Err(
-                            "--camera-direction and --camera-look-at are mutually exclusive".into(),
-                        );
-                    }
-                    result.camera_direction = Some(parse_vec3(
-                        value.ok_or("Missing --camera-direction")?.as_str(),
-                        "camera-direction",
-                    )?)
-                }
-                "camera-look-at" => {
-                    if result.camera_direction.is_some() {
-                        return Err(
-                            "--camera-look-at and --camera-direction are mutually exclusive".into(),
-                        );
-                    }
-                    result.camera_look_at = Some(parse_vec3(
-                        value.ok_or("Missing --camera-look-at")?.as_str(),
-                        "camera-look-at",
-                    )?)
-                }
                 "stdout" => {
                     if result.output.is_some() {
                         return Err("--stdout and positional output are mutually exclusive".into());
                     }
                     result.stdout = true;
-                }
-                "super-sampling" => {
-                    result.super_sampling = Some(parse(
-                        value.ok_or("Missing --super-sampling")?.as_str(),
-                        "super-sampling",
-                    )?)
-                }
-                "ambient-light" => {
-                    result.ambient_light = Some(parse_vec3(
-                        value.ok_or("Missing --ambient-light")?.as_str(),
-                        "ambient-light",
-                    )?)
-                }
-                "void-color" => {
-                    result.void_color = Some(parse_vec3(
-                        value.ok_or("Missing --void-color")?.as_str(),
-                        "void-color",
-                    )?)
-                }
-                "emit-normal" => result.emit_normal = true,
-                "emit-distance" => result.emit_distance = true,
-                "jobs" => {
-                    result.jobs = Some(parse(value.ok_or("Missing --jobs")?.as_str(), "jobs")?)
-                }
-                "gamma" => {
-                    if result.ldr {
-                        return Err("--gamma and --ldr are mutually exclusive".into());
-                    }
-                    result.gamma = Some(parse(value.ok_or("Missing --gamma")?.as_str(), "gamma")?)
-                }
-                "exposure" => {
-                    if result.ldr {
-                        return Err("--exposure and --ldr are mutually exclusive".into());
-                    }
-                    result.exposure = Some(parse(
-                        value.ok_or("Missing --exposure")?.as_str(),
-                        "exposure",
-                    )?)
-                }
-                "ldr" => {
-                    if result.gamma.is_some() || result.exposure.is_some() || result.no_ldr {
-                        return Err(
-                            "--ldr and --gamma/--exposure/--no-ldr are mutually exclusive".into(),
-                        );
-                    }
-                    result.ldr = true;
-                }
-                "no-ldr" => {
-                    if result.ldr {
-                        return Err("--no-ldr and --ldr are mutually exclusive".into());
-                    }
-                    result.no_ldr = true;
                 }
                 _ => return Err(format!("Unknown option --{}", flag).into()),
             }
@@ -217,64 +125,11 @@ fn args() -> Result<ArgsResult, Box<dyn Error>> {
             while let Some(c) = chars.next() {
                 match c {
                     'N' => result.no_output_bmp_suffix = true,
-                    'n' => result.emit_normal = true,
-                    'd' => result.emit_distance = true,
                     'S' => {
                         if result.output.is_some() {
                             return Err("-S and positional output are mutually exclusive".into());
                         }
                         result.stdout = true;
-                    }
-                    'W' | 'H' | 's' | 'a' | 'v' | 'j' | 'g' | 'e' | 'P' | 'D' | 'L' => {
-                        let mut val: String = chars.collect();
-                        if val.is_empty() {
-                            i += 1;
-                            if i >= args.len() {
-                                return Err(format!("Missing value for -{}", c).into());
-                            }
-                            val = args[i].clone();
-                        }
-                        match c {
-                            'W' => result.width = Some(parse(&val, "-W")?),
-                            'H' => result.height = Some(parse(&val, "-H")?),
-                            's' => result.super_sampling = Some(parse(&val, "-s")?),
-                            'a' => result.ambient_light = Some(parse_vec3(&val, "-a")?),
-                            'v' => result.void_color = Some(parse_vec3(&val, "-v")?),
-                            'j' => result.jobs = Some(parse(&val, "-j")?),
-                            'g' => {
-                                if result.ldr {
-                                    return Err("-g and -l are mutually exclusive".into());
-                                }
-                                result.gamma = Some(parse(&val, "-g")?)
-                            }
-                            'e' => {
-                                if result.ldr {
-                                    return Err("-e and -l are mutually exclusive".into());
-                                }
-                                result.exposure = Some(parse(&val, "-e")?)
-                            }
-                            'P' => result.camera_position = Some(parse_vec3(&val, "-P")?),
-                            'D' => {
-                                if result.camera_look_at.is_some() {
-                                    return Err("-D and -L are mutually exclusive".into());
-                                }
-                                result.camera_direction = Some(parse_vec3(&val, "-D")?)
-                            }
-                            'L' => {
-                                if result.camera_direction.is_some() {
-                                    return Err("-L and -D are mutually exclusive".into());
-                                }
-                                result.camera_look_at = Some(parse_vec3(&val, "-L")?)
-                            }
-                            _ => {}
-                        }
-                        break;
-                    }
-                    'l' => {
-                        if result.gamma.is_some() || result.exposure.is_some() {
-                            return Err("-l and -g/-e are mutually exclusive".into());
-                        }
-                        result.ldr = true;
                     }
                     _ => return Err(format!("Unknown short flag: -{}", c).into()),
                 }
